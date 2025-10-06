@@ -1,0 +1,31 @@
+{
+  "name": "biequity",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@coinbase/onchainkit": "latest",
+    "@farcaster/miniapp-sdk": "^0.1.8",
+    "@tanstack/react-query": "^5.81.5",
+    "next": "15.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.31.6",
+    "wagmi": "^2.16.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.5",
+    "@farcaster/quick-auth": "^0.0.7",
+    "@next/eslint-plugin-next": "^15.3.4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef"
+}
