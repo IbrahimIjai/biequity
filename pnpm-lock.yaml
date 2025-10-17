@@ -37,8 +37,8 @@ importers:
         specifier: 2.2.5
         version: 2.2.5
       '@farcaster/quick-auth':
-        specifier: ^0.0.7
-        version: 0.0.7(typescript@5.9.3)
+        specifier: ^0.0.8
+        version: 0.0.8(typescript@5.9.3)
       '@next/eslint-plugin-next':
         specifier: ^15.3.4
         version: 15.5.4
@@ -177,8 +177,8 @@ packages:
     peerDependencies:
       typescript: 5.8.3
 
-  '@farcaster/quick-auth@0.0.7':
-    resolution: {integrity: sha512-FNHlizdwjLmX7MQjsArGuj7SVfrQ9UCqk9JIiMaBt/J9WtIEZQxFtilKYjaIDyd4gZiZ9EImKVvR2bVyd8ExeQ==}
+  '@farcaster/quick-auth@0.0.8':
+    resolution: {integrity: sha512-NRIq1BcbcQCC6xBF5owfckkY00xKQVpqhpLNl5rICVpl0xeDsiVbkenIrHaUuyjtCK2W28YVc2ZCFRyz9ERHKg==}
     peerDependencies:
       typescript: 5.8.3
 
@@ -2682,7 +2682,7 @@ snapshots:
       typescript: 5.9.3
       zod: 3.25.76
 
-  '@farcaster/quick-auth@0.0.7(typescript@5.9.3)':
+  '@farcaster/quick-auth@0.0.8(typescript@5.9.3)':
     dependencies:
       jose: 5.10.0
       typescript: 5.9.3
