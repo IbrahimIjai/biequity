@@ -46,4 +46,5 @@ export const minikitConfig = {
 		ogImageUrl: `${ROOT_URL}/hero.png`,
 		noindex: false,
 	},
+	noindex: false,
 } as const;
