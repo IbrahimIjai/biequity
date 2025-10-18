@@ -1,28 +1,35 @@
 "use client";
 import { useEffect } from "react";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useMiniKit } from "@/providers/minikit-provider";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Github, Shield, TrendingUp, Twitter, Zap } from "lucide-react";
+import {
+	ArrowRight,
+	Github,
+	Shield,
+	TrendingUp,
+	Twitter,
+	Zap,
+} from "lucide-react";
 
 export default function Home() {
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `useMiniKit().context?.user`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
+	// If you need to verify the user's identity, you can use the useQuickAuth hook.
+	// This hook will verify the user's signature and return the user's FID. You can update
+	// this to meet your needs. See the /app/api/auth/route.ts file for more details.
+	// Note: If you don't need to verify the user's identity, you can get their FID and other user data
+	// via `useMiniKit().context?.user`.
+	// const { data, isLoading, error } = useQuickAuth<{
+	//   userFid: string;
+	// }>("/api/auth");
 
-  const { setMiniAppReady, isMiniAppReady } = useMiniKit();
+	const { setMiniAppReady, isMiniAppReady } = useMiniKit();
 
-  useEffect(() => {
-    if (!isMiniAppReady) {
-      setMiniAppReady();
-    }
-  }, [setMiniAppReady, isMiniAppReady]);
+	useEffect(() => {
+		if (!isMiniAppReady) {
+			setMiniAppReady();
+		}
+	}, [setMiniAppReady, isMiniAppReady]);
 
-  return (
+	return (
 		<main className="h-[100dvh] bg-background flex flex-col overflow-hidden">
 			{/* Header */}
 			<header className="border-b-4 border-border flex-shrink-0">

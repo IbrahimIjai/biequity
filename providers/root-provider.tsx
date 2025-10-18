@@ -1,5 +1,5 @@
 "use client";
-import { MiniKitProvider } from "@coinbase/onchainkit/minikit";
+import { MiniKitProvider } from "@/providers/minikit-provider";
 import { Web3ContextProvider } from "./reown-wagmi";
 import { ThemeProvider } from "./theme-provider";
 
@@ -16,8 +16,9 @@ export function RootProvider({
 				<MiniKitProvider enabled autoConnect notificationProxyUrl={undefined}>
 					<ThemeProvider
 						attribute="class"
-						defaultTheme="system"
+						defaultTheme="light"
 						enableSystem
+                        forcedTheme="light"
 						disableTransitionOnChange>
 						{children}
 					</ThemeProvider>

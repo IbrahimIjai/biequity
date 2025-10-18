@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Space_Mono } from "next/font/google";
-import { SafeArea } from "@coinbase/onchainkit/minikit";
+import { SafeArea } from "@/providers/minikit-provider";
 import { minikitConfig } from "@/minikit.config";
 import "./globals.css";
-import "@coinbase/onchainkit/styles.css";
 import { RootProvider } from "@/providers/root-provider";
 
 export async function generateMetadata(): Promise<Metadata> {
