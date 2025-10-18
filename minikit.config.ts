@@ -23,20 +23,26 @@ export const minikitConfig = {
 	miniapp: {
 		version: "1",
 		name: "biequity",
-		subtitle: "",
-		description: "",
-		screenshotUrls: [],
+		subtitle: "Permissionless Stock Issuance Protocol",
+		description:
+			"Issue and trade tokenized equities backed by stablecoins on Base. Mint, manage, and redeem with transparent onchain collateral.",
+		screenshotUrls: [
+			`${ROOT_URL}/images/screenshot1.png`,
+			`${ROOT_URL}/images/screenshot2.png`,
+			`${ROOT_URL}/images/screenshot3.png`,
+		],
 		iconUrl: `${ROOT_URL}/icon.png`,
 		splashImageUrl: `${ROOT_URL}/splash.png`,
 		splashBackgroundColor: "#000000",
 		homeUrl: ROOT_URL,
 		webhookUrl: `${ROOT_URL}/api/webhook`,
 		primaryCategory: "utility",
-		tags: ["example"],
+		tags: ["fully backed stocks, buy stocks"],
 		heroImageUrl: `${ROOT_URL}/hero.png`,
-		tagline: "",
-		ogTitle: "",
-		ogDescription: "",
+		tagline: "Buy Fully Backed Stocks with Crypto",
+		ogTitle: "Biequity — Buy Fully Backed Stocks with Crypto",
+		ogDescription:
+			"Issue and trade tokenized equities backed by stablecoins on Base. Mint, manage, and redeem with transparent onchain collateral.",
 		ogImageUrl: `${ROOT_URL}/hero.png`,
 	},
 } as const;
