@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@farcaster/miniapp-sdk": "^0.1.8",
+    "@farcaster/miniapp-sdk": "^0.2.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@reown/appkit": "^1.8.10",
     "@reown/appkit-adapter-wagmi": "^1.8.10",
