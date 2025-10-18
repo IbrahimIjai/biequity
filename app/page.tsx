@@ -1,10 +1,8 @@
 "use client";
 import { useEffect } from "react";
-import Image from "next/image";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-// import { useQuickAuth } from "@coinbase/onchainkit/minikit";
-import styles from "./page.module.css";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Github, Shield, TrendingUp, Twitter, Zap } from "lucide-react";
 
 export default function Home() {
   // If you need to verify the user's identity, you can use the useQuickAuth hook.
@@ -25,58 +23,149 @@ export default function Home() {
   }, [setMiniAppReady, isMiniAppReady]);
 
   return (
-    <div className={styles.container}>
-      <header className={styles.headerWrapper}>
-        <Wallet />
-      </header>
+		<main className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+			{/* Header */}
+			<header className="border-b-4 border-border flex-shrink-0">
+				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<div className="w-8 h-8 bg-primary border-4 border-border" />
+						<span className="text-xl font-bold tracking-tight">BIEQUITY</span>
+					</div>
+					<nav className="hidden md:flex items-center gap-6 text-sm">
+						<a
+							href="#protocol"
+							className="hover:text-primary transition-colors">
+							Protocol
+						</a>
+						<a href="#docs" className="hover:text-primary transition-colors">
+							Docs
+						</a>
+					</nav>
+					<Button className="shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+						Launch App
+					</Button>
+				</div>
+			</header>
 
-      <div className={styles.content}>
-        <Image
-          priority
-          src="/sphere.svg"
-          alt="Sphere"
-          width={200}
-          height={200}
-        />
-        <h1 className={styles.title}>MiniKit</h1>
+			{/* Hero Section */}
+			<section className="flex-1 flex items-center justify-center px-4 overflow-y-auto">
+				<div className="max-w-4xl mx-auto text-center py-8">
+					<div className="inline-block mb-4 px-3 py-1 bg-primary/10 border-4 border-border">
+						<span className="text-xs font-bold">BUILT ON BASE NETWORK</span>
+					</div>
 
-        <p>
-          Get started by editing <code>app/page.tsx</code>
-        </p>
+					<h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight text-balance">
+						Permissionless Stock Issuance Protocol
+					</h1>
 
-        <h2 className={styles.componentsTitle}>Explore Components</h2>
+					<p className="text-lg md:text-xl text-muted-foreground mb-6 leading-relaxed max-w-2xl mx-auto">
+						Use stablecoins to back volatile stocks. Issue tokenized equities
+						on-chain without intermediaries.
+					</p>
 
-        <ul className={styles.components}>
-          {[
-            {
-              name: "Transaction",
-              url: "https://docs.base.org/onchainkit/transaction/transaction",
-            },
-            {
-              name: "Swap",
-              url: "https://docs.base.org/onchainkit/swap/swap",
-            },
-            {
-              name: "Checkout",
-              url: "https://docs.base.org/onchainkit/checkout/checkout",
-            },
-            {
-              name: "Wallet",
-              url: "https://docs.base.org/onchainkit/wallet/wallet",
-            },
-            {
-              name: "Identity",
-              url: "https://docs.base.org/onchainkit/identity/identity",
-            },
-          ].map((component) => (
-            <li key={component.name}>
-              <a target="_blank" rel="noreferrer" href={component.url}>
-                {component.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+					<div className="flex flex-col sm:flex-row gap-3 mb-8 justify-center">
+						<Button
+							size="lg"
+							className="shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+							Start Issuing <ArrowRight className="ml-2 h-5 w-5" />
+						</Button>
+						<Button
+							size="lg"
+							variant="outline"
+							className="border-4 shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all bg-transparent">
+							Read Whitepaper
+						</Button>
+					</div>
+
+					{/* Stats */}
+					<div className="grid grid-cols-3 gap-3 md:gap-4 max-w-2xl mx-auto">
+						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
+								$0
+							</div>
+							<div className="text-xs text-muted-foreground">TVL</div>
+						</div>
+						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
+								0
+							</div>
+							<div className="text-xs text-muted-foreground">Stocks Issued</div>
+						</div>
+						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
+								0
+							</div>
+							<div className="text-xs text-muted-foreground">
+								Active Issuers
+							</div>
+						</div>
+					</div>
+
+					{/* How It Works */}
+					<div className="grid md:grid-cols-3 gap-3 md:gap-4 mt-8 max-w-3xl mx-auto">
+						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="w-10 h-10 bg-primary border-4 border-border flex items-center justify-center mb-2 mx-auto">
+								<Shield className="h-5 w-5 text-primary-foreground" />
+							</div>
+							<h3 className="text-lg font-bold mb-1">Deposit Stables</h3>
+							<p className="text-xs text-muted-foreground leading-relaxed">
+								Lock USDC as collateral in smart contracts
+							</p>
+						</div>
+
+						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="w-10 h-10 bg-primary border-4 border-border flex items-center justify-center mb-2 mx-auto">
+								<Zap className="h-5 w-5 text-primary-foreground" />
+							</div>
+							<h3 className="text-lg font-bold mb-1">Mint Stocks</h3>
+							<p className="text-xs text-muted-foreground leading-relaxed">
+								Issue tokenized equity backed by collateral
+							</p>
+						</div>
+
+						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
+							<div className="w-10 h-10 bg-primary border-4 border-border flex items-center justify-center mb-2 mx-auto">
+								<TrendingUp className="h-5 w-5 text-primary-foreground" />
+							</div>
+							<h3 className="text-lg font-bold mb-1">Trade & Manage</h3>
+							<p className="text-xs text-muted-foreground leading-relaxed">
+								Trade permissionlessly or redeem for collateral
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Footer */}
+			<footer className="border-t-4 border-border py-4 flex-shrink-0">
+				<div className="container mx-auto px-4">
+					<div className="flex justify-between items-center">
+						<div className="flex items-center gap-2">
+							<div className="w-6 h-6 bg-primary border-4 border-border" />
+							<span className="text-sm font-bold">BIEQUITY</span>
+						</div>
+						<div className="flex gap-4 items-center">
+							<a
+								href="#"
+								className="hover:text-primary transition-colors"
+								aria-label="Twitter">
+								<Twitter className="h-5 w-5" />
+							</a>
+							<a
+								href="#"
+								className="hover:text-primary transition-colors"
+								aria-label="GitHub">
+								<Github className="h-5 w-5" />
+							</a>
+							<a
+								href="#"
+								className="hover:text-primary transition-colors text-sm">
+								Docs
+							</a>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</main>
+	);
 }
