@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import Link from "next/link";
 import { useMiniKit } from "@/providers/minikit-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,14 +40,14 @@ export default function Home() {
 						<span className="text-xl font-bold tracking-tight">BIEQUITY</span>
 					</div>
 					<nav className="hidden md:flex items-center gap-6 text-sm">
-						<a
-							href="#protocol"
+						<Link
+							href="/protocol"
 							className="hover:text-primary transition-colors">
 							Protocol
-						</a>
-						<a href="#docs" className="hover:text-primary transition-colors">
+						</Link>
+						<Link href="/docs" className="hover:text-primary transition-colors">
 							Docs
-						</a>
+						</Link>
 					</nav>
 					<Button className="shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
 						Launch App
@@ -84,30 +85,7 @@ export default function Home() {
 						</Button>
 					</div>
 
-					{/* Stats */}
-					<div className="grid grid-cols-3 gap-3 md:gap-4 max-w-2xl mx-auto">
-						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
-							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
-								$0
-							</div>
-							<div className="text-xs text-muted-foreground">TVL</div>
-						</div>
-						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
-							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
-								0
-							</div>
-							<div className="text-xs text-muted-foreground">Stocks Issued</div>
-						</div>
-						<div className="p-4 bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
-							<div className="text-2xl md:text-3xl font-bold text-primary mb-1">
-								0
-							</div>
-							<div className="text-xs text-muted-foreground">
-								Active Issuers
-							</div>
-						</div>
-					</div>
-
+					
 					{/* How It Works */}
 					<div className="grid md:grid-cols-3 gap-3 md:gap-4 mt-8 max-w-3xl mx-auto">
 						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
