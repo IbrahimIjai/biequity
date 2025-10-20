@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import Link from "next/link";
 
@@ -26,37 +27,45 @@ export default function ProtocolPage() {
 				<div className="max-w-6xl mx-auto">
 					{/* Top Metrics */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-						<div className="bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] p-6">
-							<div className="text-sm text-muted-foreground mb-2">
-								TREASURY FUNDS
-							</div>
-							<div className="text-3xl font-bold text-primary mb-1">
-								$2,450,000
-							</div>
-							<div className="text-xs text-muted-foreground">USDC</div>
-						</div>
+						<Card className="border-4">
+							<CardContent className="p-6">
+								<div className="text-sm text-muted-foreground mb-2">
+									TREASURY FUNDS
+								</div>
+								<div className="text-3xl font-bold text-primary mb-1">
+									$2,450,000
+								</div>
+								<div className="text-xs text-muted-foreground">USDC</div>
+							</CardContent>
+						</Card>
 
-						<div className="bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] p-6">
-							<div className="text-sm text-muted-foreground mb-2">
-								TVL BACKED
-							</div>
-							<div className="text-3xl font-bold text-primary mb-1">
-								$1,890,000
-							</div>
-							<div className="text-xs text-muted-foreground">
-								77.1% of Treasury
-							</div>
-						</div>
+						<Card className="border-4">
+							<CardContent className="p-6">
+								<div className="text-sm text-muted-foreground mb-2">
+									TVL BACKED
+								</div>
+								<div className="text-3xl font-bold text-primary mb-1">
+									$1,890,000
+								</div>
+								<div className="text-xs text-muted-foreground">
+									77.1% of Treasury
+								</div>
+							</CardContent>
+						</Card>
 
-						<div className="bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] p-6">
-							<div className="text-sm text-muted-foreground mb-2">
-								BACKING PROCESSING
-							</div>
-							<div className="text-3xl font-bold text-primary mb-1">
-								$560,000
-							</div>
-							<div className="text-xs text-muted-foreground">22.9% Pending</div>
-						</div>
+						<Card className="border-4">
+							<CardContent className="p-6">
+								<div className="text-sm text-muted-foreground mb-2">
+									BACKING PROCESSING
+								</div>
+								<div className="text-3xl font-bold text-primary mb-1">
+									$560,000
+								</div>
+								<div className="text-xs text-muted-foreground">
+									22.9% Pending
+								</div>
+							</CardContent>
+						</Card>
 					</div>
 
 					{/* Stocks Section */}
@@ -67,11 +76,11 @@ export default function ProtocolPage() {
 					{/* Stock Cards */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{/* TSLA Card */}
-						<div className="bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
-							<div className="border-b-4 border-border p-4 bg-primary/5">
+						<Card className="border-4">
+							<CardHeader className="border-b-4 border-border bg-primary/5">
 								<div className="flex items-center justify-between">
 									<div>
-										<div className="text-2xl font-bold">TSLA</div>
+										<CardTitle className="text-2xl">TSLA</CardTitle>
 										<div className="text-xs text-muted-foreground">
 											Tesla, Inc.
 										</div>
@@ -81,9 +90,9 @@ export default function ProtocolPage() {
 										<span className="text-sm font-bold">+2.4%</span>
 									</div>
 								</div>
-							</div>
+							</CardHeader>
 
-							<div className="p-4 space-y-4">
+							<CardContent className="p-4 space-y-4">
 								<div className="grid grid-cols-3 gap-3">
 									<div>
 										<div className="text-xs text-muted-foreground mb-1">
@@ -123,18 +132,18 @@ export default function ProtocolPage() {
 									</div>
 								</div>
 
-								<Button className="w-full shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+								<Button className="w-full shadow hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
 									View Details
 								</Button>
-							</div>
-						</div>
+							</CardContent>
+						</Card>
 
 						{/* AAPL Card */}
-						<div className="bg-card border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
-							<div className="border-b-4 border-border p-4 bg-primary/5">
+						<Card className="border-4">
+							<CardHeader className="border-b-4 border-border bg-primary/5">
 								<div className="flex items-center justify-between">
 									<div>
-										<div className="text-2xl font-bold">AAPL</div>
+										<CardTitle className="text-2xl">AAPL</CardTitle>
 										<div className="text-xs text-muted-foreground">
 											Apple Inc.
 										</div>
@@ -144,9 +153,9 @@ export default function ProtocolPage() {
 										<span className="text-sm font-bold">-0.8%</span>
 									</div>
 								</div>
-							</div>
+							</CardHeader>
 
-							<div className="p-4 space-y-4">
+							<CardContent className="p-4 space-y-4">
 								<div className="grid grid-cols-3 gap-3">
 									<div>
 										<div className="text-xs text-muted-foreground mb-1">
@@ -186,11 +195,11 @@ export default function ProtocolPage() {
 									</div>
 								</div>
 
-								<Button className="w-full shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+								<Button className="w-full shadow hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
 									View Details
 								</Button>
-							</div>
-						</div>
+							</CardContent>
+						</Card>
 					</div>
 				</div>
 			</section>
