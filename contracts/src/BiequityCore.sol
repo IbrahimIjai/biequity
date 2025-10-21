@@ -5,6 +5,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IPyth} from "@pyth-network/IPyth.sol";
+import {BiequityToken} from "./BiequityToken.sol";
+
+import {PythStructs} from "@pyth-network/PythStructs.sol";
 
 import {BiequityTokenFactory} from "./BiequityTokenFactory.sol";
 
@@ -102,5 +105,52 @@ contract BiequityCore is Ownable {
         tokenBySymbol[symbol] = tokenAddr;
 
         emit StockRegistered(symbol, stockCounter, pythFeedId, tokenAddr);
+    }
+
+    function buy(string calldata symbol, uint256 usdcAmount) external {
+        address tokenAddr = tokenBySymbol[symbol];
+        require(tokenAddr != address(0), "Stock not registered");
+        StockConfig storage stock = stocksByToken[tokenAddr];
+        require(stock.active, "Stock inactive");
+        require(usdcAmount > 0, "Invalid amount");
+
+        USDC.transferFrom(msg.sender, address(this), usdcAmount);
+        stock.usdcBalance += usdcAmount;
+
+        uint256 fee = _calculateFee(usdcAmount);
+        USDC.transfer(treasury, fee);
+        stock.usdcBalance -= fee;
+
+        uint256 netUsdc = usdcAmount - fee;
+
+        uint256 tokens = _getStockAmtFromUSD(symbol, netUsdc);
+
+        BiequityToken(tokenAddr).mint(msg.sender, tokens);
+
+        stock.totalIssued += tokens;
+        stock.totalPending += tokens;
+
+        emit TokensMinted(symbol, tokens, netUsdc);
+    }
+
+    function _getPythPrice(bytes32 feedId) internal view returns (uint256) {
+        PythStructs.Price memory price = PYTH.getPriceUnsafe(feedId);
+        if (price.price < 0) revert("Invalid price");
+        return uint256(int256(price.price)) * (10 ** uint256(-price.expo));
+    }
+
+    function _getStockAmtFromUSD(
+        string calldata symbol,
+        uint256 usdAmount
+    ) internal view returns (uint256) {
+        address tokenAddr = tokenBySymbol[symbol];
+        require(tokenAddr != address(0), "Stock not registered");
+        StockConfig storage stock = stocksByToken[tokenAddr];
+        uint256 price = _getPythPrice(stock.pythFeedId);
+        return (usdAmount * (10 ** 18)) / (price * USDC.decimals());
+    }
+
+    function _calculateFee(uint256 amount) internal pure returns (uint256) {
+        return (amount * FEE_BPS) / 10000;
     }
 }

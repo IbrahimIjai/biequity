@@ -82,7 +82,7 @@ export default function Home() {
 							variant="outline"
 							className="border-4 shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all bg-transparent">
 							Read Whitepaper
-						</Button>forge remappings
+						</Button>
 					</div>
 
 					
