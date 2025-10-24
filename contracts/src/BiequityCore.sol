@@ -250,6 +250,13 @@ contract BiequityCore is Ownable {
         }
     }
 
+    function getStockAmtFromUSD(
+        string calldata symbol,
+        uint256 usdAmount
+    ) external view returns (uint256) {
+        return _getStockAmtFromUSD(symbol, usdAmount);
+    }
+
     function _getPythPrice(bytes32 feedId) internal view returns (uint256) {
         PythStructs.Price memory price = PYTH.getPriceUnsafe(feedId);
         if (price.price <= 0) revert("Invalid price");
