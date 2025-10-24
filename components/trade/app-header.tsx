@@ -6,8 +6,6 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 
-
-
 export function AppHeader() {
 	const { address } = useAccount();
 	const displayAddress = `${address?.slice(0, 6)}...${address?.slice(-4)}`;

@@ -2,6 +2,7 @@
 import { MiniKitProvider } from "@/providers/minikit-provider";
 import { Web3ContextProvider } from "./reown-wagmi";
 import { ThemeProvider } from "./theme-provider";
+import { BalancesProvider } from "@/providers/balances-provider";
 
 export function RootProvider({
 	children,
@@ -18,8 +19,9 @@ export function RootProvider({
 						attribute="class"
 						defaultTheme="light"
 						enableSystem
-                        forcedTheme="light"
+						forcedTheme="light"
 						disableTransitionOnChange>
+						<BalancesProvider />
 						{children}
 					</ThemeProvider>
 				</MiniKitProvider>
