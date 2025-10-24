@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTradeStore } from "@/store/trade-store";
-import { TokenSelectorModal } from "./token-selector-dialog";
+import { TokenSelectorDialog } from "./token-selector-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
@@ -21,8 +21,7 @@ export function SwapInterface() {
 		swapTokens,
 	} = useTradeStore();
 
-	const [isToken0ModalOpen, setIsToken0ModalOpen] = useState(false);
-	const [isToken1ModalOpen, setIsToken1ModalOpen] = useState(false);
+	// Dialog open state is managed inside TokenSelectorDialog via trigger-as-child
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleAmount0Change = (value: string) => {
@@ -59,19 +58,24 @@ export function SwapInterface() {
 					<CardContent className="p-8 space-y-6">
 						{/* Token 0 Header */}
 						<div className="flex items-center justify-between">
-							<button
-								onClick={() => setIsToken0ModalOpen(true)}
-								className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-								<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
-									<span className="text-xs font-bold text-background">
-										{token0.symbol[0]}
-									</span>
-								</div>
-								<div className="text-left">
-									<div className="font-bold text-sm">{token0.symbol}</div>
-									<div className="text-xs text-muted-foreground">1,234.56</div>
-								</div>
-							</button>
+							<TokenSelectorDialog
+								onSelect={setToken0}
+								tokens={STABLECOINS}
+								currentToken={token0}>
+								<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+									<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
+										<span className="text-xs font-bold text-background">
+											{token0.symbol[0]}
+										</span>
+									</div>
+									<div className="text-left">
+										<div className="font-bold text-sm">{token0.symbol}</div>
+										<div className="text-xs text-muted-foreground">
+											1,234.56
+										</div>
+									</div>
+								</button>
+							</TokenSelectorDialog>
 							<button
 								onClick={() => setAmount0(amount0 ? "" : "1000")}
 								className="text-xs font-bold border-2 border-border px-3 py-1 shadow hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
@@ -104,21 +108,24 @@ export function SwapInterface() {
 
 						{/* Token 1 Header */}
 						<div className="flex items-center justify-between">
-							<button
-								onClick={() => setIsToken1ModalOpen(true)}
-								className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-								<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
-									<span className="text-xs font-bold text-background">
-										{token1.symbol[0]}
-									</span>
-								</div>
-								<div className="text-left">
-									<div className="font-bold text-sm">
-										Receive {token1.symbol}
+							<TokenSelectorDialog
+								onSelect={setToken1}
+								tokens={STOCKS}
+								currentToken={token1}>
+								<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+									<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
+										<span className="text-xs font-bold text-background">
+											{token1.symbol[0]}
+										</span>
 									</div>
-									<div className="text-xs text-muted-foreground">0.00</div>
-								</div>
-							</button>
+									<div className="text-left">
+										<div className="font-bold text-sm">
+											Receive {token1.symbol}
+										</div>
+										<div className="text-xs text-muted-foreground">0.00</div>
+									</div>
+								</button>
+							</TokenSelectorDialog>
 							<div className="text-right">
 								<div className="text-2xl font-bold">{amount1 || "0"}</div>
 							</div>
@@ -156,21 +163,7 @@ export function SwapInterface() {
 				</Card>
 			</div>
 
-			<TokenSelectorModal
-				isOpen={isToken0ModalOpen}
-				onClose={() => setIsToken0ModalOpen(false)}
-				onSelect={setToken0}
-				tokens={STABLECOINS}
-				currentToken={token0}
-			/>
-
-			<TokenSelectorModal
-				isOpen={isToken1ModalOpen}
-				onClose={() => setIsToken1ModalOpen(false)}
-				onSelect={setToken1}
-				tokens={STOCKS}
-				currentToken={token1}
-			/>
+			{/* Dialogs are now embedded with triggers above */}
 		</>
 	);
 }
