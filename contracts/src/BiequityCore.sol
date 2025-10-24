@@ -258,7 +258,7 @@ contract BiequityCore is Ownable {
         uint256 base = uint256(int256(price.price));
         if (expo < 0) {
             uint256 scale = 10 ** uint256(uint32(-expo));
-            return base * scale;
+            return base / scale; // Divide to unscale
         } else if (expo > 0) {
             uint256 scale = 10 ** uint256(uint32(expo));
             return base / scale;
