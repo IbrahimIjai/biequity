@@ -4,10 +4,18 @@ import type React from "react";
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useChainId } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { useIsInMiniApp } from "@/providers/minikit-provider";
 import { useAppKit } from "@reown/appkit/react";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { baseSepolia } from "@reown/appkit/networks";
 
 export function AppHeader() {
 	const { address, isConnected, isConnecting } = useAccount();
@@ -17,6 +25,10 @@ export function AppHeader() {
 	const { isInMiniApp } = useIsInMiniApp();
 	const { connectors, connect, status } = useConnect();
 	const { open } = useAppKit();
+	const { disconnect } = useDisconnect();
+	const chainId = useChainId();
+	const networkName =
+		chainId === baseSepolia.id ? baseSepolia.name : `Chain ${chainId}`;
 
 	const handleConnect = () => {
 		if (isConnected) {
@@ -43,17 +55,57 @@ export function AppHeader() {
 					<span className="text-sm font-bold">Back</span>
 				</Link>
 				<h1 className="text-xl font-bold tracking-tight">TRADE</h1>
-				<Button
-					onClick={handleConnect}
-					size="sm"
-					className="text-xs font-mono border-2 border-border shadow"
-					variant="outline">
-					{isConnected
-						? displayAddress
-						: status === "pending" || isConnecting
-						? "Connecting..."
-						: "Connect"}
-				</Button>
+				{isConnected ? (
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button
+								size="sm"
+								className="text-xs font-mono border-2 border-border shadow flex items-center gap-2"
+								variant="outline">
+								<span className="inline-flex h-2 w-2 rounded-full bg-green-500" />
+								<span className="hidden sm:inline">Connected</span>
+								<span>{displayAddress}</span>
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="w-full max-w-sm">
+							<DialogHeader>
+								<DialogTitle>Wallet</DialogTitle>
+							</DialogHeader>
+							<div className="space-y-4">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center gap-2 text-sm">
+										<span className="inline-flex h-2 w-2 rounded-full bg-green-500" />
+										<span className="font-medium">Network connected</span>
+									</div>
+									<div className="text-xs text-muted-foreground">
+										{networkName}
+									</div>
+								</div>
+
+								<div className="rounded border p-3 text-xs font-mono">
+									{address}
+								</div>
+
+								<div className="flex gap-2 justify-end">
+									<Button
+										variant="destructive"
+										onClick={() => disconnect()}
+										size="sm">
+										Disconnect
+									</Button>
+								</div>
+							</div>
+						</DialogContent>
+					</Dialog>
+				) : (
+					<Button
+						onClick={handleConnect}
+						size="sm"
+						className="text-xs font-mono border-2 border-border shadow"
+						variant="outline">
+						{status === "pending" || isConnecting ? "Connecting..." : "Connect"}
+					</Button>
+				)}
 			</div>
 		</header>
 	);
