@@ -14,6 +14,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
+	DialogClose,
 } from "@/components/ui/dialog";
 import { baseSepolia } from "@reown/appkit/networks";
 
@@ -25,7 +26,7 @@ export function AppHeader() {
 	const { isInMiniApp } = useIsInMiniApp();
 	const { connectors, connect, status } = useConnect();
 	const { open } = useAppKit();
-	const { disconnect } = useDisconnect();
+	const { disconnect, isPending: isDisconnecting } = useDisconnect();
 	const chainId = useChainId();
 	const networkName =
 		chainId === baseSepolia.id ? baseSepolia.name : `Chain ${chainId}`;
@@ -62,8 +63,6 @@ export function AppHeader() {
 								size="sm"
 								className="text-xs font-mono border-2 border-border shadow flex items-center gap-2"
 								variant="outline">
-								<span className="inline-flex h-2 w-2 rounded-full bg-green-500" />
-								<span className="hidden sm:inline">Connected</span>
 								<span>{displayAddress}</span>
 							</Button>
 						</DialogTrigger>
@@ -86,13 +85,16 @@ export function AppHeader() {
 									{address}
 								</div>
 
-								<div className="flex gap-2 justify-end">
-									<Button
-										variant="destructive"
-										onClick={() => disconnect()}
-										size="sm">
-										Disconnect
-									</Button>
+								<div className="flex gap-2 w-full">
+									<DialogClose asChild>
+										<Button
+											variant="destructive"
+											onClick={() => disconnect()}
+											className="w-full"
+											disabled={isDisconnecting}>
+											{isDisconnecting ? "Disconnecting..." : "Disconnect"}
+										</Button>
+									</DialogClose>
 								</div>
 							</div>
 						</DialogContent>

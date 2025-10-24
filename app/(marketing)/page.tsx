@@ -33,7 +33,7 @@ export default function Home() {
 	}, [setMiniAppReady, isMiniAppReady]);
 
 	return (
-		<main className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+		<main className="min-h-[100dvh] lg:h-[100dvh] bg-background flex flex-col overflow-hidden">
 			{/* Header */}
 			<header className="border-b-4 border-border flex-shrink-0">
 				<div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -61,7 +61,7 @@ export default function Home() {
 			<section className="flex-1 flex items-center justify-center px-4 overflow-y-auto">
 				<div className="max-w-4xl mx-auto text-center py-8">
 					<div className="inline-block mb-4 px-3 py-1 bg-primary/10 border-4 border-border">
-						<span className="text-xs font-bold">BUILT ON BASE NETWORK</span>
+						<span className="text-xs font-bold">Secured by PYTH NETWORKK</span>
 					</div>
 
 					<h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight text-balance">
