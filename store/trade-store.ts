@@ -1,13 +1,6 @@
 import { create } from "zustand";
 import { STABLECOINS, STOCKS } from "@/lib/tokens-list";
-
-export interface Token {
-	symbol: string;
-	name: string;
-	icon: string;
-	decimals: number;
-	address?: string;
-}
+import type { Token } from "@/lib/tokens-list";
 
 export interface TradeState {
 	token0: Token;
@@ -24,7 +17,8 @@ const DEFAULT_STABLE: Token =
 	STABLECOINS.find((t) => t.symbol === "USDT") ??
 	STABLECOINS.find((t) => t.symbol === "USDC") ??
 	STABLECOINS[0];
-const DEFAULT_STOCK: Token = STOCKS.find((t) => t.symbol === "AAPL") ?? STOCKS[0];
+const DEFAULT_STOCK: Token =
+	STOCKS.find((t) => t.symbol === "AAPL") ?? STOCKS[0];
 
 export const useTradeStore = create<TradeState>((set) => ({
 	token0: DEFAULT_STABLE,

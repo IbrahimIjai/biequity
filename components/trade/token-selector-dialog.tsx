@@ -9,17 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface Token {
-	symbol: string;
-	name: string;
-	icon: string;
-	decimals: number;
-}
+import type { Token } from "@/lib/tokens-list";
 
 interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
-	tokens: Token[];
+	tokens: readonly Token[];
 	currentToken?: Token;
 	children?: React.ReactNode;
 }

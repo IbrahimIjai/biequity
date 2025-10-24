@@ -1,3 +1,11 @@
+export type Token = {
+	symbol: string;
+	name: string;
+	icon: string; // image url/path
+	decimals: number;
+	address?: string;
+};
+
 export const STABLECOINS = [
 	{
 		symbol: "USDC",
@@ -6,7 +14,7 @@ export const STABLECOINS = [
 		decimals: 6,
 		address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
 	},
-];
+] satisfies readonly Token[];
 
 export const STOCKS = [
 	{
@@ -32,4 +40,7 @@ export const STOCKS = [
 
 		address: "0x0000000000000000000000000000000000000000AAPL",
 	},
-];
+] satisfies readonly Token[];
+
+export const ALL_TOKENS = [...STABLECOINS, ...STOCKS] as const;
+export type TokenSymbol = (typeof ALL_TOKENS)[number]["symbol"];
