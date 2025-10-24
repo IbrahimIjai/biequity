@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import { STABLECOINS, STOCKS } from "@/lib/tokens-list";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function SwapInterface() {
 	const {
@@ -63,11 +64,12 @@ export function SwapInterface() {
 									tokens={STABLECOINS}
 									currentToken={token0}>
 									<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-										<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
-											<span className="text-xs font-bold text-background">
+										<Avatar className="size-10 border-2 border-border shadow">
+											<AvatarImage src={token0.icon} alt={token0.name} />
+											<AvatarFallback className="text-xs font-bold">
 												{token0.symbol[0]}
-											</span>
-										</div>
+											</AvatarFallback>
+										</Avatar>
 										<div className="text-left">
 											<div className="font-bold text-sm">{token0.symbol}</div>
 											<div className="text-xs text-muted-foreground">
@@ -115,11 +117,12 @@ export function SwapInterface() {
 									tokens={STOCKS}
 									currentToken={token1}>
 									<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-										<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
-											<span className="text-xs font-bold text-background">
+										<Avatar className="size-10 border-2 border-border shadow">
+											<AvatarImage src={token1.icon} alt={token1.name} />
+											<AvatarFallback className="text-xs font-bold">
 												{token1.symbol[0]}
-											</span>
-										</div>
+											</AvatarFallback>
+										</Avatar>
 										<div className="text-left">
 											<div className="font-bold text-sm">
 												Receive {token1.symbol}

@@ -2,13 +2,7 @@ export const STABLECOINS = [
 	{
 		symbol: "USDC",
 		name: "USD Coin",
-		icon: "💵",
-		decimals: 6,
-	},
-	{
-		symbol: "USDT",
-		name: "Tether",
-		icon: "🔗",
+		icon: "/tokens/usdc.png",
 		decimals: 6,
 	},
 ];
@@ -17,25 +11,19 @@ export const STOCKS = [
 	{
 		symbol: "AAPL",
 		name: "Apple Stock",
-		icon: "🍎",
+		icon: "/tokens/AAPL.png",
 		decimals: 18,
 	},
 	{
 		symbol: "TSLA",
 		name: "Tesla Stock",
-		icon: "⚡",
-		decimals: 18,
-	},
-	{
-		symbol: "GOOGL",
-		name: "Google Stock",
-		icon: "🔍",
+		icon: "/tokens/TSLA.png",
 		decimals: 18,
 	},
 	{
 		symbol: "MSFT",
 		name: "Microsoft Stock",
-		icon: "🪟",
+		icon: "/tokens/MSFT.png",
 		decimals: 18,
 	},
 ];

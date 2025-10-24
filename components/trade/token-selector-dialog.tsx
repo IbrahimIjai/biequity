@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import * as React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Token {
 	symbol: string;
@@ -20,7 +21,7 @@ interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
 	tokens: Token[];
 	currentToken?: Token;
-	children?: React.ReactNode; // Trigger content
+	children?: React.ReactNode;
 }
 
 export function TokenSelectorDialog({
@@ -44,11 +45,15 @@ export function TokenSelectorDialog({
 				) : (
 					<Button variant="ghost" className="p-0 h-auto">
 						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow border-2 border-border">
-								<span className="text-xs font-bold text-background">
+							<Avatar className="size-10 border-2 border-border shadow">
+								<AvatarImage
+									src={currentToken?.icon}
+									alt={currentToken?.name ?? "Token"}
+								/>
+								<AvatarFallback className="text-xs font-bold">
 									{currentToken?.symbol?.[0] ?? "?"}
-								</span>
-							</div>
+								</AvatarFallback>
+							</Avatar>
 							<div className="text-left">
 								<div className="font-bold text-sm">
 									{currentToken?.symbol ?? "Select"}
@@ -76,7 +81,12 @@ export function TokenSelectorDialog({
 									? "border-primary bg-primary/10"
 									: "border-border hover:border-primary"
 							}`}>
-							<span className="text-2xl">{token.icon}</span>
+							<Avatar className="size-8 border">
+								<AvatarImage src={token.icon} alt={token.name} />
+								<AvatarFallback className="text-xs font-bold">
+									{token.symbol[0]}
+								</AvatarFallback>
+							</Avatar>
 							<div className="text-left flex-1">
 								<div className="font-bold text-sm">{token.symbol}</div>
 								<div className="text-xs text-muted-foreground">
