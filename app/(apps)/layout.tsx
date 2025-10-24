@@ -1,6 +1,5 @@
 import type React from "react";
 import type { Metadata } from "next";
-import "./globals.css";
 import { AppHeader } from "@/components/trade/app-header";
 
 

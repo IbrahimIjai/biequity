@@ -11,8 +11,10 @@ import {
 	Twitter,
 	Zap,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+	const { push } = useRouter();
 	// If you need to verify the user's identity, you can use the useQuickAuth hook.
 	// This hook will verify the user's signature and return the user's FID. You can update
 	// this to meet your needs. See the /app/api/auth/route.ts file for more details.
@@ -49,7 +51,7 @@ export default function Home() {
 							Docs
 						</Link>
 					</nav>
-					<Button className="shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+					<Button onClick={()=>push("/trade")} className="shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
 						Launch App
 					</Button>
 				</div>
