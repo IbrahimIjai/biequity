@@ -4,11 +4,35 @@ import type React from "react";
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useAccount } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
+import { Button } from "@/components/ui/button";
+import { useIsInMiniApp } from "@/providers/minikit-provider";
+import { useAppKit } from "@reown/appkit/react";
 
 export function AppHeader() {
-	const { address } = useAccount();
-	const displayAddress = `${address?.slice(0, 6)}...${address?.slice(-4)}`;
+	const { address, isConnected, isConnecting } = useAccount();
+	const displayAddress = address
+		? `${address.slice(0, 6)}...${address.slice(-4)}`
+		: "Connect";
+	const { isInMiniApp } = useIsInMiniApp();
+	const { connectors, connect, status } = useConnect();
+	const { open } = useAppKit();
+
+	const handleConnect = () => {
+		if (isConnected) {
+			// When already connected, open account/Connect modal (desktop flow)
+			if (!isInMiniApp) open({ view: "Connect" });
+			return;
+		}
+		if (isInMiniApp) {
+			// Mini app: connect via the first available farcaster connector
+			const connector = connectors?.[0];
+			if (connector && !isConnecting) connect({ connector });
+			return;
+		}
+		// Web: open Reown modal
+		open({ view: "Connect" });
+	};
 	return (
 		<header className="border-b-4 border-border flex-shrink-0">
 			<div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -19,9 +43,17 @@ export function AppHeader() {
 					<span className="text-sm font-bold">Back</span>
 				</Link>
 				<h1 className="text-xl font-bold tracking-tight">TRADE</h1>
-				<div className="text-xs font-mono border-2 border-border px-3 py-2 shadow">
-					{displayAddress}
-				</div>
+				<Button
+					onClick={handleConnect}
+					size="sm"
+					className="text-xs font-mono border-2 border-border shadow"
+					variant="outline">
+					{isConnected
+						? displayAddress
+						: status === "pending" || isConnecting
+						? "Connecting..."
+						: "Connect"}
+				</Button>
 			</div>
 		</header>
 	);
