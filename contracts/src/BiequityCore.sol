@@ -172,16 +172,21 @@ contract BiequityCore is Ownable {
             "Not fully backed"
         );
 
-        uint256 price = _getPythPrice(stock.pythFeedId);
-        uint256 usdcOut = (tokenAmount * price * (10 ** 6)) / (10 ** 18);
+        // Compute price in USDC base units per 1 token, then convert to USDC out
+        uint8 usdcDecimals = IERC20Metadata(address(USDC)).decimals();
+        uint256 priceUsdcUnits = _getPythPriceInUsdcUnits(
+            stock.pythFeedId,
+            usdcDecimals
+        );
+        uint256 usdcOut = (tokenAmount * priceUsdcUnits) / (10 ** 18);
         uint256 fee = _calculateFee(usdcOut);
-        usdc.transfer(treasury, fee);
+        USDC.safeTransfer(treasury, fee);
         stock.usdcBalance -= fee;
 
-        usdc.transfer(msg.sender, usdcOut - fee);
+        USDC.safeTransfer(msg.sender, usdcOut - fee);
         stock.usdcBalance -= (usdcOut - fee);
 
-        IERC20(tokenAddr).burnFrom(msg.sender, tokenAmount);
+        BiequityToken(tokenAddr).burnFrom(msg.sender, tokenAmount);
         stock.totalIssued -= tokenAmount;
         stock.totalPending = stock.totalIssued > stock.totalBacked
             ? stock.totalIssued - stock.totalBacked
@@ -201,7 +206,7 @@ contract BiequityCore is Ownable {
         );
         require(stock.usdcBalance >= amount, "Insufficient stock balance");
         stock.usdcBalance -= amount;
-        usdc.transfer(msg.sender, amount);
+        USDC.safeTransfer(msg.sender, amount);
     }
 
     function setTreasury(address newTreasury) external onlyOwner {
@@ -257,20 +262,25 @@ contract BiequityCore is Ownable {
         return _getStockAmtFromUSD(symbol, usdAmount);
     }
 
-    function _getPythPrice(bytes32 feedId) internal view returns (uint256) {
+    // Returns price in USDC base units per 1 token (i.e., scaled by 10^usdcDecimals)
+    function _getPythPriceInUsdcUnits(
+        bytes32 feedId,
+        uint8 usdcDecimals
+    ) internal view returns (uint256) {
         PythStructs.Price memory price = PYTH.getPriceUnsafe(feedId);
         if (price.price <= 0) revert("Invalid price");
         int32 expo = price.expo;
         require(expo >= -77 && expo <= 77, "expo out of range");
         uint256 base = uint256(int256(price.price));
+
         if (expo < 0) {
-            uint256 scale = 10 ** uint256(uint32(-expo));
-            return base / scale; // Divide to unscale
+            uint256 denom = 10 ** uint256(uint32(-expo));
+            return (base * (10 ** usdcDecimals)) / denom;
         } else if (expo > 0) {
-            uint256 scale = 10 ** uint256(uint32(expo));
-            return base / scale;
+            uint256 mul = 10 ** uint256(uint32(expo));
+            return base * (10 ** usdcDecimals) * mul;
         } else {
-            return base;
+            return base * (10 ** usdcDecimals);
         }
     }
 
@@ -281,11 +291,14 @@ contract BiequityCore is Ownable {
         address tokenAddr = tokenBySymbol[symbol];
         require(tokenAddr != address(0), "Stock not registered");
         StockConfig storage stock = stocksByToken[tokenAddr];
-        uint256 price = _getPythPrice(stock.pythFeedId);
-        // Scale by actual USDC decimals rather than hardcoding 1e6
+        // price in USDC base units per 1 token
         uint8 usdcDecimals = IERC20Metadata(address(USDC)).decimals();
-        uint256 usdcScale = 10 ** uint256(usdcDecimals);
-        return (usdAmount * 1e18) / (price * usdcScale);
+        uint256 priceUsdcUnits = _getPythPriceInUsdcUnits(
+            stock.pythFeedId,
+            usdcDecimals
+        );
+        // tokens (1e18) = usdAmount (USDC base units) * 1e18 / priceUsdcUnits
+        return (usdAmount * 1e18) / priceUsdcUnits;
     }
 
     function _calculateFee(uint256 amount) internal pure returns (uint256) {
