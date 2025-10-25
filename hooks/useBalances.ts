@@ -88,14 +88,10 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 			return entries;
 		},
 	});
-
-	// Sync query data to Zustand store when it changes (v5 removed onSuccess from options)
-	useEffect(() => {
+useEffect(() => {
 		if (query.data) setBalances(query.data);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [query.data]);
 
-	// watch new blocks and refresh balances
 	useEffect(() => {
 		if (!publicClient || !address) return;
 		const unwatch = publicClient.watchBlocks({
@@ -105,10 +101,8 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 			},
 		});
 		return () => unwatch();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [publicClient, address, chainId, tokensWithAddress]);
 
-	// Expose query status for consumers (optional)
 	const { data, isLoading, isError } = query;
 	console.log({ data, isLoading, isError });
 	return query;
