@@ -127,6 +127,16 @@ export const BIEQUITY_CORE_ABI = [
 	},
 	{
 		type: "function",
+		name: "getStockAmtFromUSD",
+		inputs: [
+			{ name: "symbol", type: "string", internalType: "string" },
+			{ name: "usdAmount", type: "uint256", internalType: "uint256" },
+		],
+		outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
 		name: "transferOwnership",
 		inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
 		outputs: [],
