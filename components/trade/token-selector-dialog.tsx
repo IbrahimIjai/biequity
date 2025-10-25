@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Token } from "@/lib/tokens-list";
+import { useBalancesStore } from "@/store/balances-store";
 
 interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
@@ -25,6 +26,7 @@ export function TokenSelectorDialog({
 	children,
 }: TokenSelectorDialogProps) {
 	const [open, setOpen] = React.useState(false);
+	const { getBalance } = useBalancesStore();
 
 	const handleSelect = (token: Token) => {
 		onSelect(token);
@@ -86,6 +88,9 @@ export function TokenSelectorDialog({
 								<div className="text-xs text-muted-foreground">
 									{token.name}
 								</div>
+							</div>
+							<div className="ml-auto text-right text-xs tabular-nums text-muted-foreground">
+								{getBalance(token.address ?? token.symbol)?.formatted ?? "0"}
 							</div>
 						</button>
 					))}

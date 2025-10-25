@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import { STABLECOINS, STOCKS } from "@/lib/tokens-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useBalancesStore } from "@/store/balances-store";
 
 export function SwapInterface() {
 	const {
@@ -23,6 +24,13 @@ export function SwapInterface() {
 	} = useTradeStore();
 
 	const [isLoading, setIsLoading] = useState(false);
+
+	// Balances from global store
+	const { getBalance } = useBalancesStore();
+	const token0Balance =
+		getBalance(token0.address ?? token0.symbol)?.formatted ?? "0";
+	const token1Balance =
+		getBalance(token1.address ?? token1.symbol)?.formatted ?? "0";
 
 	const handleAmount0Change = (value: string) => {
 		setAmount0(value);
@@ -73,13 +81,13 @@ export function SwapInterface() {
 										<div className="text-left">
 											<div className="font-bold text-sm">{token0.symbol}</div>
 											<div className="text-xs text-muted-foreground">
-												1,234.56
+												Balance: {token0Balance}
 											</div>
 										</div>
 									</button>
 								</TokenSelectorDialog>
 								<button
-									onClick={() => setAmount0(amount0 ? "" : "1000")}
+									onClick={() => setAmount0(token0Balance || "")}
 									className="text-xs font-bold border-2 border-border px-3 py-1 shadow hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
 									Use Max
 								</button>
@@ -127,7 +135,9 @@ export function SwapInterface() {
 											<div className="font-bold text-sm">
 												Receive {token1.symbol}
 											</div>
-											<div className="text-xs text-muted-foreground">0.00</div>
+											<div className="text-xs text-muted-foreground">
+												Balance: {token1Balance}
+											</div>
 										</div>
 									</button>
 								</TokenSelectorDialog>
