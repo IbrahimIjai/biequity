@@ -1,7 +1,7 @@
 export type Token = {
 	symbol: string;
 	name: string;
-	icon: string; // image url/path
+	icon: string; 
 	decimals: number;
 	address?: string;
 };

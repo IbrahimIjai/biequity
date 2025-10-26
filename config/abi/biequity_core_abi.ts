@@ -54,10 +54,71 @@ export const BIEQUITY_CORE_ABI = [
 	},
 	{
 		type: "function",
+		name: "getStockAmtFromUsd",
+		inputs: [
+			{ name: "symbol", type: "string", internalType: "string" },
+			{ name: "usdAmount", type: "uint256", internalType: "uint256" },
+		],
+		outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "getStockConfigByToken",
+		inputs: [{ name: "tokenAddr", type: "address", internalType: "address" }],
+		outputs: [
+			{
+				name: "_tokenAddress",
+				type: "address",
+				internalType: "address",
+			},
+			{ name: "id", type: "uint256", internalType: "uint256" },
+			{ name: "totalIssued", type: "uint256", internalType: "uint256" },
+			{ name: "totalBacked", type: "uint256", internalType: "uint256" },
+			{
+				name: "totalPending",
+				type: "uint256",
+				internalType: "uint256",
+			},
+			{ name: "usdcBalance", type: "uint256", internalType: "uint256" },
+			{
+				name: "minBackedRatio",
+				type: "uint256",
+				internalType: "uint256",
+			},
+			{ name: "pythFeedId", type: "bytes32", internalType: "bytes32" },
+			{ name: "active", type: "bool", internalType: "bool" },
+			{
+				name: "computedState",
+				type: "uint8",
+				internalType: "enum BiequityCore.StockState",
+			},
+		],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "getStockPriceByFeedId",
+		inputs: [{ name: "feedId", type: "bytes32", internalType: "bytes32" }],
+		outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+		stateMutability: "view",
+	},
+	{
+		type: "function",
 		name: "owner",
 		inputs: [],
 		outputs: [{ name: "", type: "address", internalType: "address" }],
 		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "redeem",
+		inputs: [
+			{ name: "symbol", type: "string", internalType: "string" },
+			{ name: "tokenAmount", type: "uint256", internalType: "uint256" },
+		],
+		outputs: [],
+		stateMutability: "nonpayable",
 	},
 	{
 		type: "function",
@@ -79,6 +140,23 @@ export const BIEQUITY_CORE_ABI = [
 		type: "function",
 		name: "renounceOwnership",
 		inputs: [],
+		outputs: [],
+		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
+		name: "setTreasury",
+		inputs: [{ name: "newTreasury", type: "address", internalType: "address" }],
+		outputs: [],
+		stateMutability: "nonpayable",
+	},
+	{
+		type: "function",
+		name: "settleTokens",
+		inputs: [
+			{ name: "symbol", type: "string", internalType: "string" },
+			{ name: "amount", type: "uint256", internalType: "uint256" },
+		],
 		outputs: [],
 		stateMutability: "nonpayable",
 	},
@@ -127,16 +205,6 @@ export const BIEQUITY_CORE_ABI = [
 	},
 	{
 		type: "function",
-		name: "getStockAmtFromUsd",
-		inputs: [
-			{ name: "symbol", type: "string", internalType: "string" },
-			{ name: "usdAmount", type: "uint256", internalType: "uint256" },
-		],
-		outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
 		name: "transferOwnership",
 		inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
 		outputs: [],
@@ -148,6 +216,16 @@ export const BIEQUITY_CORE_ABI = [
 		inputs: [],
 		outputs: [{ name: "", type: "address", internalType: "address" }],
 		stateMutability: "view",
+	},
+	{
+		type: "function",
+		name: "withdrawUsdcFromStock",
+		inputs: [
+			{ name: "tokenAddr", type: "address", internalType: "address" },
+			{ name: "amount", type: "uint256", internalType: "uint256" },
+		],
+		outputs: [],
+		stateMutability: "nonpayable",
 	},
 	{
 		type: "event",
@@ -284,4 +362,3 @@ export const BIEQUITY_CORE_ABI = [
 		inputs: [{ name: "token", type: "address", internalType: "address" }],
 	},
 ] as const;
-
