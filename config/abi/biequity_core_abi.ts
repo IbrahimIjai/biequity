@@ -137,13 +137,6 @@ export const BIEQUITY_CORE_ABI = [
 	},
 	{
 		type: "function",
-		name: "getStockPriceByFeedId",
-		inputs: [{ name: "feedId", type: "bytes32", internalType: "bytes32" }],
-		outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-		stateMutability: "view",
-	},
-	{
-		type: "function",
 		name: "transferOwnership",
 		inputs: [{ name: "newOwner", type: "address", internalType: "address" }],
 		outputs: [],
@@ -291,3 +284,4 @@ export const BIEQUITY_CORE_ABI = [
 		inputs: [{ name: "token", type: "address", internalType: "address" }],
 	},
 ] as const;
+

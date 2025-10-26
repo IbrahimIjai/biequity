@@ -316,4 +316,17 @@ contract BiequityCore is Ownable {
     function _calculateFee(uint256 amount) internal pure returns (uint256) {
         return (amount * FEE_BPS) / 10000;
     }
+
+      function getStockPriceByFeedId(
+        bytes32 feedId
+    ) external view returns (uint256) {
+        return _getStockPriceByFeedId(feedId);
+    }
+
+    function _getStockPriceByFeedId(
+        bytes32 feedId
+    ) internal view returns (uint256) {
+        uint8 usdcDecimals = IERC20Metadata(address(USDC)).decimals();
+        return _getPythPriceInUsdcUnits(feedId, usdcDecimals);
+    }
 }

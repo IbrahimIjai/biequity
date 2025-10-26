@@ -7,7 +7,7 @@ import { formatUnits, isAddress, type Address } from "viem";
 import { useChainId, useConfig, usePublicClient } from "wagmi";
 import { STOCKS, STABLECOINS, type Token } from "@/lib/tokens-list";
 import { usePricesStore } from "@/store/prices-store";
-import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core";
+import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core_abi";
 import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
 
 function isObject(value: unknown): value is Record<string, unknown> {
