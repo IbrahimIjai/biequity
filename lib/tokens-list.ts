@@ -1,9 +1,12 @@
+export type FeedId = `0x${string}`;
+
 export type Token = {
 	symbol: string;
 	name: string;
-	icon: string; 
+	icon: string;
 	decimals: number;
 	address?: string;
+	feedId?: FeedId;
 };
 
 export const STABLECOINS = [
@@ -23,6 +26,8 @@ export const STOCKS = [
 		icon: "/tokens/AAPL.png",
 		decimals: 18,
 		address: "0x0000000000000000000000000000000000000000AAPL",
+		feedId:
+			"0x49f6b65cb1de6b10eaf75e7c03ca029c306d0357e91b5311b175084a5ad55688",
 	},
 	{
 		symbol: "TSLA",
@@ -31,6 +36,8 @@ export const STOCKS = [
 		decimals: 18,
 
 		address: "0x0000000000000000000000000000000000000000TSLA",
+		feedId:
+			"0x16dad506d7db8da01c87581c87ca897a012a153557d4d578c3b9c9e1bc0632f1",
 	},
 	{
 		symbol: "MSFT",
@@ -39,6 +46,8 @@ export const STOCKS = [
 		decimals: 18,
 
 		address: "0x0000000000000000000000000000000000000000AAPL",
+		feedId:
+			"0xd0ca23c1cc005e004ccf1db5bf76aeb6a49218f43dac3d4b275e92de12ded4d1",
 	},
 ] satisfies readonly Token[];
 

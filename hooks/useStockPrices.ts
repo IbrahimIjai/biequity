@@ -7,7 +7,7 @@ import { formatUnits, isAddress, type Address } from "viem";
 import { useChainId, useConfig, usePublicClient } from "wagmi";
 import { STOCKS, STABLECOINS, type Token } from "@/lib/tokens-list";
 import { usePricesStore } from "@/store/prices-store";
-import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core_abi";
+import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core";
 import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -21,9 +21,19 @@ function hasError(value: unknown): value is { error: unknown } {
 }
 
 export function useStockPrices(tokens: readonly Token[] = STOCKS) {
-	const symbols = useMemo(
-		() => tokens.map((t) => t.symbol.toUpperCase()),
+	const entriesToQuery = useMemo(
+		() =>
+			tokens
+				.map((t) => ({ symbol: t.symbol.toUpperCase(), feedId: t.feedId }))
+				.filter(
+					(e): e is { symbol: string; feedId: `0x${string}` } =>
+						typeof e.feedId === "string",
+				),
 		[tokens],
+	);
+	const symbols = useMemo(
+		() => entriesToQuery.map((e) => e.symbol),
+		[entriesToQuery],
 	);
 
 	const { setPrices } = usePricesStore();
@@ -35,24 +45,24 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 	const coreAddressValid = isAddress(coreAddress);
 	const USDC_DECIMALS =
 		STABLECOINS.find((t) => t.symbol === "USDC")?.decimals ?? 6;
-	const oneUSDC = BigInt(10 ** USDC_DECIMALS);
+	// Using price by feed id returns USDC base units per 1 token; no need to send amount
 
 	const query = useQuery({
 		queryKey: [
 			"stock-prices",
 			chainId,
 			coreAddressValid ? coreAddress : "invalid",
-			symbols,
+			entriesToQuery.map((e) => e.feedId),
 		],
-		enabled: coreAddressValid && symbols.length > 0,
+		enabled: coreAddressValid && entriesToQuery.length > 0,
 		refetchOnWindowFocus: false,
 		refetchInterval: 30_000, // 30 seconds
 		queryFn: async () => {
-			const contracts = symbols.map((symbol) => ({
+			const contracts = entriesToQuery.map(({ feedId }) => ({
 				address: coreAddress,
 				abi: BIEQUITY_CORE_ABI,
-				functionName: "getStockAmtFromUsd" as const,
-				args: [symbol, oneUSDC],
+				functionName: "getStockPriceByFeedId" as const,
+				args: [feedId],
 				chainId,
 			}));
 
@@ -66,12 +76,10 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 				const sym = symbols[i]!;
 				let priceUsd = 0;
 				if (hasResult(res) && typeof res.result === "bigint") {
-					const tokensPer1Usdc = Number(formatUnits(res.result, 18));
-					if (tokensPer1Usdc > 0) {
-						priceUsd = 1 / tokensPer1Usdc; // assuming USDC ~= $1
-					}
+					// result is price in USDC base units per 1 token
+					priceUsd = Number(formatUnits(res.result, USDC_DECIMALS));
 				} else if (hasError(res)) {
-					console.debug("getStockAmtFromUsd failed for", sym, res.error);
+					console.debug("getStockPriceByFeedId failed for", sym, res.error);
 				}
 				return { symbol: sym, priceUsd, updatedAt };
 			});
