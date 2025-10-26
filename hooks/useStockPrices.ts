@@ -51,7 +51,7 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 			const contracts = symbols.map((symbol) => ({
 				address: coreAddress,
 				abi: BIEQUITY_CORE_ABI,
-				functionName: "getStockAmtFromUSD" as const,
+				functionName: "getStockAmtFromUsd" as const,
 				args: [symbol, oneUSDC],
 				chainId,
 			}));
@@ -71,7 +71,7 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 						priceUsd = 1 / tokensPer1Usdc; // assuming USDC ~= $1
 					}
 				} else if (hasError(res)) {
-					console.debug("getStockAmtFromUSD failed for", sym, res.error);
+					console.debug("getStockAmtFromUsd failed for", sym, res.error);
 				}
 				return { symbol: sym, priceUsd, updatedAt };
 			});

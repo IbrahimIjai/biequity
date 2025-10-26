@@ -127,7 +127,7 @@ export const BIEQUITY_CORE_ABI = [
 	},
 	{
 		type: "function",
-		name: "getStockAmtFromUSD",
+		name: "getStockAmtFromUsd",
 		inputs: [
 			{ name: "symbol", type: "string", internalType: "string" },
 			{ name: "usdAmount", type: "uint256", internalType: "uint256" },
@@ -284,3 +284,11 @@ export const BIEQUITY_CORE_ABI = [
 		inputs: [{ name: "token", type: "address", internalType: "address" }],
 	},
 ] as const;
+
+
+forge create ./src/BiequityCore.sol:BiequityCore \
+	--rpc-url $BASE_RPC_URL \
+	--account basedeployer1 \
+	--broadcast --verify \
+	--etherscan-api-key $BASE_SEPOLIA_RPC_URL \
+	--constructor-args 0x036CbD53842c5426634e7929541eC2318f3dCF7e 0xA2aa501b19aff244D90cc15a4Cf739D2725B5729 0xE4137238fad21B7840A1D6F30bb4b8eb0507Db7e
