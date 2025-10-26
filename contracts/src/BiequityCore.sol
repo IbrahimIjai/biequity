@@ -280,16 +280,10 @@ contract BiequityCore is Ownable {
         uint256 base = uint256(int256(price.price));
 
         if (expo < 0) {
-            // expo is in [-77, -1] here due to the require above; casting to uint32 is safe
-            // because -expo is in [1, 77], and then widening to uint256 cannot truncate.
-            // forge-lint: disable-next-line(unsafe-typecast)
             uint256 denom = 10 ** uint256(uint32(-expo));
             return (base * (10 ** usdcDecimals)) / denom;
         } else if (expo > 0) {
-            // expo is in [1, 77] here due to the require above; casting to uint32 is safe
-            // and then widening to uint256 cannot truncate.
-            // forge-lint: disable-next-line(unsafe-typecast)
-            uint256 mul = 10 ** uint256(uint32(expo));
+              uint256 mul = 10 ** uint256(uint32(expo));
             return base * (10 ** usdcDecimals) * mul;
         } else {
             return base * (10 ** usdcDecimals);
