@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
+import { pageSEO } from "@/lib/seo";
 import Link from "next/link";
+
+export const metadata = pageSEO.protocol();
 
 export default function ProtocolPage() {
 	return (

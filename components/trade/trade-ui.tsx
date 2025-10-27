@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTradeStore } from "@/store/trade-store";
 import { TokenSelectorDialog } from "./token-selector-dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { ChevronDown } from "lucide-react";
 import { STABLECOINS, STOCKS } from "@/lib/tokens-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBalancesStore } from "@/store/balances-store";
+import { usePricesStore } from "@/store/prices-store";
+import { useStockPrices } from "@/hooks/useStockPrices";
+import { formatDecimal, formatSignificantFigures } from "@/lib/utils";
 
 export function SwapInterface() {
 	const {
@@ -24,20 +27,69 @@ export function SwapInterface() {
 	} = useTradeStore();
 
 	const [isLoading, setIsLoading] = useState(false);
+	const [lastChangedField, setLastChangedField] = useState<
+		"amount0" | "amount1"
+	>("amount0");
 
-	// Balances from global store
+	const allTokens = [...STABLECOINS, ...STOCKS];
+	const tokensWithFeedId = useMemo(
+		() => allTokens.filter((t) => typeof t.feedId === "string"),
+		[allTokens],
+	);
+	useStockPrices(tokensWithFeedId);
+
 	const { getBalance } = useBalancesStore();
+	const { getPrice } = usePricesStore();
+
 	const token0Balance =
 		getBalance(token0.address ?? token0.symbol)?.formatted ?? "0";
 	const token1Balance =
 		getBalance(token1.address ?? token1.symbol)?.formatted ?? "0";
 
+	const token0Price =
+		getPrice(token0.symbol)?.priceUsd ?? (token0.symbol === "USDC" ? 1.0 : 0);
+	const token1Price =
+		getPrice(token1.symbol)?.priceUsd ?? (token1.symbol === "USDC" ? 1.0 : 0);
+
+	const conversionRate = useMemo(() => {
+		if (token0Price > 0 && token1Price > 0) {
+			return token0Price / token1Price;
+		}
+		return 0;
+	}, [token0Price, token1Price]);
+
+	useEffect(() => {
+		if (conversionRate === 0) return;
+
+		if (lastChangedField === "amount0" && amount0) {
+			const calculated = Number.parseFloat(amount0) * conversionRate;
+			setAmount1(calculated > 0 ? calculated.toString() : "");
+		} else if (lastChangedField === "amount1" && amount1) {
+			const calculated = Number.parseFloat(amount1) / conversionRate;
+			setAmount0(calculated > 0 ? calculated.toString() : "");
+		}
+	}, [
+		conversionRate,
+		amount0,
+		amount1,
+		lastChangedField,
+		setAmount0,
+		setAmount1,
+	]);
+
 	const handleAmount0Change = (value: string) => {
+		setLastChangedField("amount0");
 		setAmount0(value);
-		if (value) {
-			setAmount1((Number.parseFloat(value) * 150).toString());
-		} else {
+		if (!value) {
 			setAmount1("");
+		}
+	};
+
+	const handleAmount1Change = (value: string) => {
+		setLastChangedField("amount1");
+		setAmount1(value);
+		if (!value) {
+			setAmount0("");
 		}
 	};
 
@@ -53,11 +105,14 @@ export function SwapInterface() {
 		}
 	};
 
+	// Calculate display values
 	const price =
-		amount0 && amount1
-			? (Number.parseFloat(amount1) / Number.parseFloat(amount0)).toFixed(2)
-			: "0.00";
-	const fee = amount0 ? (Number.parseFloat(amount0) * 0.03).toFixed(2) : "0.00";
+		conversionRate > 0 ? formatDecimal(conversionRate, 4) : "0.0000";
+	const fee = amount0
+		? formatDecimal(Number.parseFloat(amount0) * 0.03, 6)
+		: "0.00";
+	const token0UsdValue = amount0 ? Number.parseFloat(amount0) * token0Price : 0;
+	const token1UsdValue = amount1 ? Number.parseFloat(amount1) * token1Price : 0;
 
 	return (
 		<>
@@ -103,7 +158,7 @@ export function SwapInterface() {
 									className="w-full text-5xl font-bold text-center bg-transparent outline-none placeholder-muted-foreground"
 								/>
 								<div className="text-sm text-muted-foreground">
-									≈ ${(Number.parseFloat(amount0 || "0") * 1.0).toFixed(2)}
+									≈ ${formatDecimal(token0UsdValue, 2)}
 								</div>
 							</div>
 						</div>
@@ -142,7 +197,11 @@ export function SwapInterface() {
 									</button>
 								</TokenSelectorDialog>
 								<div className="text-right">
-									<div className="text-2xl font-bold">{amount1 || "0"}</div>
+									<div className="text-2xl font-bold">
+										{amount1
+											? formatSignificantFigures(Number.parseFloat(amount1), 5)
+											: "0"}
+									</div>
 								</div>
 							</div>
 
