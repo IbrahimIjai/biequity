@@ -31,15 +31,41 @@ export function formatFromBaseUnits(
 
 /**
  * Formats a JS number to a string with fixed fraction digits.
+ * This is complementary to viem's formatUnits - use this for already-human numbers.
  */
 export function formatDecimal(
 	value: number,
 	displayDecimals = 2,
 	locale?: string,
 ): string {
-	if (!Number.isFinite(value)) return "0";
+	if (!Number.isFinite(value) || Number.isNaN(value)) return "0";
 	return value.toLocaleString(locale, {
 		minimumFractionDigits: displayDecimals,
 		maximumFractionDigits: displayDecimals,
 	});
+}
+
+/**
+ * Formats a number to a specified number of significant figures.
+ * Example: formatSignificantFigures(0.123456, 3) -> "0.123"
+ * Example: formatSignificantFigures(1234.56, 3) -> "1,230"
+ */
+export function formatSignificantFigures(
+	value: number,
+	sigFigs = 5,
+	locale?: string,
+): string {
+	if (!Number.isFinite(value) || Number.isNaN(value) || value === 0) return "0";
+	
+	// Use toPrecision for significant figures, then format with locale
+	const precision = value.toPrecision(sigFigs);
+	const num = Number(precision);
+	
+	// For very small or very large numbers, return scientific notation
+	if (Math.abs(num) < 0.0001 || Math.abs(num) >= 1000000) {
+		return num.toExponential(sigFigs - 1);
+	}
+	
+	// Otherwise, use locale formatting
+	return num.toLocaleString(locale);
 }
