@@ -347,27 +347,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - **Gas Costs** - Minting operations require ~80k gas on Base
 - **Token Support** - Currently limited to major US equities (AAPL, TSLA, MSFT)
 
-## 🗺️ Roadmap
-
-### Q1 2025
-
-- [ ] **Multi-asset Support** - Add bonds, commodities, and international stocks
-- [ ] **Mobile App** - Native iOS/Android applications
-- [ ] **Advanced Orders** - Limit orders, stop-loss, and DCA features
-
-### Q2 2025
-
-- [ ] **Yield Farming** - Stake stock tokens to earn rewards
-- [ ] **Portfolio Analytics** - Advanced performance tracking
-- [ ] **Social Trading** - Copy trading and leaderboards
-
-### Q3 2025
-
-- [ ] **Cross-chain Support** - Expand to Arbitrum and Polygon
-- [ ] **Institutional Features** - Multi-sig support and compliance tools
-- [ ] **API & SDK** - Developer tools for third-party integrations
-
-## 📄 Legal & Compliance
+## Legal & Compliance
 
 ⚠️ **Important Disclaimer**: Biequity tokens are synthetic representations and not actual securities. This protocol is experimental software. Users should understand the risks involved in DeFi protocols.
 
