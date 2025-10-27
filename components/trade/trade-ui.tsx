@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBalancesStore } from "@/store/balances-store";
 import { usePricesStore } from "@/store/prices-store";
 import { useStockPrices } from "@/hooks/useStockPrices";
-import { formatDecimal } from "@/lib/utils";
+import { formatDecimal, formatSignificantFigures } from "@/lib/utils";
 
 export function SwapInterface() {
 	const {
@@ -30,7 +30,6 @@ export function SwapInterface() {
 	const [lastChangedField, setLastChangedField] = useState<
 		"amount0" | "amount1"
 	>("amount0");
-
 
 	const allTokens = [...STABLECOINS, ...STOCKS];
 	const tokensWithFeedId = useMemo(
@@ -198,7 +197,11 @@ export function SwapInterface() {
 									</button>
 								</TokenSelectorDialog>
 								<div className="text-right">
-									<div className="text-2xl font-bold">{amount1 || "0"}</div>
+									<div className="text-2xl font-bold">
+										{amount1
+											? formatSignificantFigures(Number.parseFloat(amount1), 5)
+											: "0"}
+									</div>
 								</div>
 							</div>
 
