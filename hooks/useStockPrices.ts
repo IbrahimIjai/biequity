@@ -76,7 +76,6 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 				const sym = symbols[i]!;
 				let priceUsd = 0;
 				if (hasResult(res) && typeof res.result === "bigint") {
-					// result is price in USDC base units per 1 token
 					priceUsd = Number(formatUnits(res.result, USDC_DECIMALS));
 				} else if (hasError(res)) {
 					console.debug("getStockPriceByFeedId failed for", sym, res.error);

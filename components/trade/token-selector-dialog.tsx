@@ -11,6 +11,10 @@ import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Token } from "@/lib/tokens-list";
 import { useBalancesStore } from "@/store/balances-store";
+import { usePricesStore } from "@/store/prices-store";
+import { useMemo } from "react";
+import { useStockPrices } from "@/hooks/useStockPrices";
+import { formatDecimal } from "@/lib/utils";
 
 interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
@@ -27,6 +31,14 @@ export function TokenSelectorDialog({
 }: TokenSelectorDialogProps) {
 	const [open, setOpen] = React.useState(false);
 	const { getBalance } = useBalancesStore();
+	const { getPrice } = usePricesStore();
+
+	// Fetch prices for tokens that have a Pyth feed id
+	const tokensWithFeedId = useMemo(
+		() => tokens.filter((t) => typeof t.feedId === "string"),
+		[tokens],
+	);
+	useStockPrices(tokensWithFeedId);
 
 	const handleSelect = (token: Token) => {
 		onSelect(token);
@@ -83,14 +95,27 @@ export function TokenSelectorDialog({
 									{token.symbol[0]}
 								</AvatarFallback>
 							</Avatar>
+
 							<div className="text-left flex-1">
 								<div className="font-bold text-sm">{token.symbol}</div>
 								<div className="text-xs text-muted-foreground">
 									{token.name}
 								</div>
 							</div>
-							<div className="ml-auto text-right text-xs tabular-nums text-muted-foreground">
-								{getBalance(token.address ?? token.symbol)?.formatted ?? "0"}
+							<div className="flex flex-col justify-end">
+								<div className="ml-auto text-right text-xs tabular-nums text-muted-foreground">
+									{getBalance(token.address ?? token.symbol)?.formatted ?? "0"}
+								</div>
+								{token.feedId ? (
+									<div className="text-[10px] text-muted-foreground">
+										{(() => {
+											const entry = getPrice(token.symbol);
+											if (!entry || entry.priceUsd <= 0) return null;
+											const formatted = formatDecimal(entry.priceUsd, 2);
+											return `${formatted} ${token.symbol.toUpperCase()}/USD`;
+										})()}
+									</div>
+								) : null}
 							</div>
 						</button>
 					))}
