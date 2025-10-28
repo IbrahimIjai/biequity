@@ -6,9 +6,11 @@ import { minikitConfig } from "@/minikit.config";
 import { seoConfig } from "@/config/seo";
 import "./globals.css";
 import { RootProvider } from "@/providers/root-provider";
+import { Toaster } from "@/components/ui/sonner";
 
-const ROOT_URL = process.env.NEXT_PUBLIC_URL || 
-	(process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`) || 
+const ROOT_URL =
+	process.env.NEXT_PUBLIC_URL ||
+	(process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`) ||
 	"http://localhost:3000";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,16 +31,17 @@ export async function generateMetadata(): Promise<Metadata> {
 			googleBot: {
 				index: !minikitConfig.noindex,
 				follow: !minikitConfig.noindex,
-				'max-video-preview': -1,
-				'max-image-preview': 'large',
-				'max-snippet': -1,
+				"max-video-preview": -1,
+				"max-image-preview": "large",
+				"max-snippet": -1,
 			},
 		},
 		openGraph: {
 			type: "website",
 			siteName: seoConfig.siteName,
 			title: minikitConfig.miniapp.ogTitle || seoConfig.siteTitle,
-			description: minikitConfig.miniapp.ogDescription || seoConfig.siteDescription,
+			description:
+				minikitConfig.miniapp.ogDescription || seoConfig.siteDescription,
 			url: ROOT_URL,
 			images: [
 				{
@@ -59,7 +62,8 @@ export async function generateMetadata(): Promise<Metadata> {
 		twitter: {
 			card: seoConfig.twitterCard.type,
 			title: minikitConfig.miniapp.ogTitle || seoConfig.siteTitle,
-			description: minikitConfig.miniapp.ogDescription || seoConfig.siteDescription,
+			description:
+				minikitConfig.miniapp.ogDescription || seoConfig.siteDescription,
 			images: [minikitConfig.miniapp.ogImageUrl || `${ROOT_URL}/hero.png`],
 			creator: seoConfig.twitterCard.creator,
 			site: seoConfig.twitterCard.site,
@@ -72,7 +76,11 @@ export async function generateMetadata(): Promise<Metadata> {
 			],
 			apple: [
 				{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-				{ url: "/apple-touch-icon-152x152.png", sizes: "152x152", type: "image/png" },
+				{
+					url: "/apple-touch-icon-152x152.png",
+					sizes: "152x152",
+					type: "image/png",
+				},
 			],
 			other: [
 				{ rel: "mask-icon", url: "/safari-pinned-tab.svg", color: "#000000" },
@@ -121,55 +129,68 @@ export default async function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				{/* Additional SEO and performance tags */}
-				<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+				<meta
+					name="viewport"
+					content="width=device-width, initial-scale=1, shrink-to-fit=no"
+				/>
 				<meta name="format-detection" content="telephone=no" />
 				<meta name="mobile-web-app-capable" content="yes" />
 				<meta name="apple-mobile-web-app-capable" content="yes" />
-				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+				<meta
+					name="apple-mobile-web-app-status-bar-style"
+					content="black-translucent"
+				/>
 				<meta name="apple-mobile-web-app-title" content="Biequity" />
-				
+
 				{/* Preconnect to external domains for performance */}
 				<link rel="preconnect" href="https://fonts.googleapis.com" />
-				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-				
+				<link
+					rel="preconnect"
+					href="https://fonts.gstatic.com"
+					crossOrigin="anonymous"
+				/>
+
 				{/* DNS prefetch for better performance */}
 				<link rel="dns-prefetch" href="//base.org" />
 				<link rel="dns-prefetch" href="//docs.base.org" />
-				
+
 				{/* Structured Data for better search visibility */}
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{
 						__html: JSON.stringify({
-						"@context": "https://schema.org",
-						"@type": "WebApplication",
-						"name": seoConfig.siteName,
-						"description": seoConfig.siteDescription,
-						"url": ROOT_URL,
-						"applicationCategory": "FinanceApplication",
-						"operatingSystem": "Web",
-						"browserRequirements": "Requires JavaScript. Requires HTML5.",
-						"offers": {
-							"@type": "Offer",
-							"price": "0",
-							"priceCurrency": "USD"
-						},
-						"creator": {
-							"@type": "Organization",
-							"name": seoConfig.organization.name,
-							"description": seoConfig.organization.description,
-							"url": seoConfig.organization.url,
-							"logo": seoConfig.organization.logo,
-							"foundingDate": seoConfig.organization.foundingDate,
-							"industry": seoConfig.organization.industry
-						}
-						})
+							"@context": "https://schema.org",
+							"@type": "WebApplication",
+							name: seoConfig.siteName,
+							description: seoConfig.siteDescription,
+							url: ROOT_URL,
+							applicationCategory: "FinanceApplication",
+							operatingSystem: "Web",
+							browserRequirements: "Requires JavaScript. Requires HTML5.",
+							offers: {
+								"@type": "Offer",
+								price: "0",
+								priceCurrency: "USD",
+							},
+							creator: {
+								"@type": "Organization",
+								name: seoConfig.organization.name,
+								description: seoConfig.organization.description,
+								url: seoConfig.organization.url,
+								logo: seoConfig.organization.logo,
+								foundingDate: seoConfig.organization.foundingDate,
+								industry: seoConfig.organization.industry,
+							},
+						}),
 					}}
 				/>
 			</head>
 			<body className={`${spaceMono.variable}`}>
 				<RootProvider cookies={cookies}>
-					<SafeArea>{children}</SafeArea>
+					<SafeArea>
+						{children}
+						<Toaster />
+					</SafeArea>
 				</RootProvider>
 			</body>
 		</html>
