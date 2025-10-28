@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount } from "wagmi";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle, ArrowRight } from "lucide-react";
@@ -35,7 +35,6 @@ export function TradeTransactionDialog({
 	onSuccess,
 }: TradeTransactionDialogProps) {
 	const { address: userAddress, isConnected } = useAccount();
-	const { disconnect } = useDisconnect();
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [currentStep, setCurrentStep] = useState<TransactionStep>("approval");
@@ -67,15 +66,14 @@ export function TradeTransactionDialog({
 			setApprovalCompleted(false);
 			refetchAllowance();
 		} else {
-			// Reset wagmi states on close
-			disconnect();
+			// Reset dialog states on close (NO DISCONNECT)
 			setTimeout(() => {
 				// Small delay to ensure states are reset
 				setCurrentStep("approval");
 				setApprovalCompleted(false);
 			}, 100);
 		}
-	}, [isOpen, disconnect, refetchAllowance]);
+	}, [isOpen, refetchAllowance]);
 
 	// Handle step progression
 	useEffect(() => {
