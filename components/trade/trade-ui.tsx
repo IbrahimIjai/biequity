@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useAccount } from "wagmi";
 import { useTradeStore } from "@/store/trade-store";
 import { TokenSelectorDialog } from "./token-selector-dialog";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBalancesStore } from "@/store/balances-store";
 import { usePricesStore } from "@/store/prices-store";
 import { useStockPrices } from "@/hooks/useStockPrices";
+import { TradeTransactionDialog } from "./trade-transaction-dialog";
 import { formatDecimal, formatSignificantFigures } from "@/lib/utils";
 
 export function SwapInterface() {
+	const { address: userAddress, isConnected } = useAccount();
 	const {
 		token0,
 		token1,
@@ -26,7 +29,6 @@ export function SwapInterface() {
 		swapTokens,
 	} = useTradeStore();
 
-	const [isLoading, setIsLoading] = useState(false);
 	const [lastChangedField, setLastChangedField] = useState<
 		"amount0" | "amount1"
 	>("amount0");
@@ -93,19 +95,7 @@ export function SwapInterface() {
 		}
 	};
 
-	const handleSwap = async () => {
-		setIsLoading(true);
-		try {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			console.log(
-				`Swapping ${amount0} ${token0.symbol} for ${amount1} ${token1.symbol}`,
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	// Calculate display values
+	// Calculate display values and trade info
 	const price =
 		conversionRate > 0 ? formatDecimal(conversionRate, 4) : "0.0000";
 	const fee = amount0
@@ -113,6 +103,23 @@ export function SwapInterface() {
 		: "0.00";
 	const token0UsdValue = amount0 ? Number.parseFloat(amount0) * token0Price : 0;
 	const token1UsdValue = amount1 ? Number.parseFloat(amount1) * token1Price : 0;
+
+	// Determine trade type and button state
+	const isBuyingStock =
+		token0.symbol === "USDC" && STOCKS.some((s) => s.symbol === token1.symbol);
+	const isRedeemingStock =
+		STOCKS.some((s) => s.symbol === token0.symbol) && token1.symbol === "USDC";
+	const isValidTrade = isBuyingStock || isRedeemingStock;
+
+	// Button text logic
+	const getButtonText = () => {
+		if (!isConnected) return "Connect Wallet";
+		if (!amount0 || !amount1) return "Enter Amount";
+		if (!isValidTrade) return "Invalid Trade Pair";
+		if (isBuyingStock) return `Buy ${token1.symbol}`;
+		if (isRedeemingStock) return `Redeem ${token0.symbol}`;
+		return "Trade";
+	};
 
 	return (
 		<>
@@ -224,16 +231,51 @@ export function SwapInterface() {
 							)}
 						</div>
 
-						{/* Swap Button */}
-						<Button
-							onClick={handleSwap}
-							disabled={!amount0 || !amount1 || isLoading}
-							className="w-full mt-5 shadow hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 text-base font-bold py-6"
-							size="lg">
-							{isLoading
-								? "Swapping..."
-								: `Swap ${token0.symbol} for ${token1.symbol}`}
-						</Button>
+						{/* Trade Button */}
+						<TradeTransactionDialog
+							token0Symbol={token0.symbol}
+							token1Symbol={token1.symbol}
+							amount0={amount0}
+							amount1={amount1}
+							isBuyingStock={isBuyingStock}
+							onSuccess={() => {
+								// Reset amounts on success
+								setAmount0("");
+								setAmount1("");
+							}}>
+							<Button
+								disabled={!isConnected || !isValidTrade || !amount0 || !amount1}
+								className="w-full mt-5 shadow hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 text-base font-bold py-6"
+								size="lg">
+								{getButtonText()}
+							</Button>
+						</TradeTransactionDialog>
+
+						{/* Connection Status */}
+						{!isConnected && (
+							<div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-200 text-xs text-yellow-800">
+								<div className="flex items-center gap-2">
+									<span>⚠️</span>
+									<span>
+										Connect your wallet to start trading tokenized stocks
+									</span>
+								</div>
+							</div>
+						)}
+
+						{/* Trade Information */}
+						{isConnected && isValidTrade && amount0 && (
+							<div className="mt-3 p-3 bg-blue-50 border-2 border-blue-200 text-xs text-blue-800">
+								<div className="flex items-center gap-2">
+									<span>ℹ️</span>
+									<span>
+										{isBuyingStock
+											? `Buying ${amount1} ${token1.symbol} tokens with ${amount0} USDC`
+											: `Redeeming ${amount0} ${token0.symbol} tokens for ${amount1} USDC`}
+									</span>
+								</div>
+							</div>
+						)}
 					</CardContent>
 				</Card>
 			</div>
