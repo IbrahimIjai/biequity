@@ -24,11 +24,27 @@ export class AlpacaService {
 	}
 
 	/**
-	 * Get account information
+	 * Get account information including balance, buying power, and account status
+	 * @returns Complete account information from Alpaca API
 	 */
 	async getAccount(): Promise<AlpacaAccount> {
 		try {
+			logger.info("Fetching account information");
+
 			const response = await this.axiosInstance.get<AlpacaAccount>("/account");
+
+			logger.info("Account information retrieved successfully", {
+				accountNumber: response.data.account_number,
+				status: response.data.status,
+				cryptoStatus: response.data.crypto_status,
+				buyingPower: response.data.buying_power,
+				cash: response.data.cash,
+				portfolioValue: response.data.portfolio_value,
+				equity: response.data.equity,
+				tradingBlocked: response.data.trading_blocked,
+				patternDayTrader: response.data.pattern_day_trader,
+			});
+
 			return response.data;
 		} catch (error) {
 			if (error instanceof AlpacaAPIError) {
@@ -36,10 +52,70 @@ export class AlpacaService {
 					statusCode: error.statusCode,
 					message: error.message,
 					code: error.code,
+					data: error.data,
+				});
+
+				// Provide more context for common errors
+				if (error.statusCode === 401 || error.statusCode === 403) {
+					throw new AlpacaAPIError(
+						error.statusCode,
+						"Authentication failed. Please check your API credentials.",
+						error.data,
+						"AUTH_FAILED",
+					);
+				}
+			} else {
+				logger.error("Unexpected error fetching account information", {
+					error: error instanceof Error ? error.message : String(error),
 				});
 			}
+
 			throw error;
 		}
+	}
+
+	/**
+	 * Check if account is ready for trading
+	 * @returns Object indicating if account can trade and any blocking reasons
+	 */
+	async checkTradingEligibility(): Promise<{
+		canTrade: boolean;
+		reasons: string[];
+		account: AlpacaAccount;
+	}> {
+		const account = await this.getAccount();
+		const reasons: string[] = [];
+
+		if (account.status !== "ACTIVE") {
+			reasons.push(`Account status is ${account.status}, not ACTIVE`);
+		}
+
+		if (account.trading_blocked) {
+			reasons.push("Trading is blocked on this account");
+		}
+
+		if (account.account_blocked) {
+			reasons.push("Account is blocked");
+		}
+
+		if (parseFloat(account.buying_power) <= 0) {
+			reasons.push("Insufficient buying power");
+		}
+
+		const canTrade = reasons.length === 0;
+
+		logger.info("Trading eligibility check", {
+			canTrade,
+			reasons,
+			buyingPower: account.buying_power,
+			status: account.status,
+		});
+
+		return {
+			canTrade,
+			reasons,
+			account,
+		};
 	}
 
 	/**

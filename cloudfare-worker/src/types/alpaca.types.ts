@@ -123,35 +123,91 @@ export interface OrderResponse {
 
 /**
  * Alpaca Account information
+ * Complete response from GET /v2/account
  */
 export interface AlpacaAccount {
+	/** Account UUID */
 	id: string;
+	/** Account number */
 	account_number: string;
+	/** Account status (e.g., "ACTIVE") */
 	status: string;
+	/** Crypto trading status (e.g., "ACTIVE") */
 	crypto_status: string;
+	/** Account currency (e.g., "USD") */
 	currency: string;
+	/** Current buying power available for trading */
 	buying_power: string;
+	/** Regulation T buying power */
 	regt_buying_power: string;
+	/** Day trading buying power */
 	daytrading_buying_power: string;
+	/** Effective buying power */
+	effective_buying_power: string;
+	/** Non-marginable buying power */
+	non_marginable_buying_power: string;
+	/** Options buying power */
+	options_buying_power: string;
+	/** Beginning of day day trading buying power */
+	bod_dtbp: string;
+	/** Cash balance */
 	cash: string;
+	/** Accrued fees */
+	accrued_fees: string;
+	/** Total portfolio value (cash + positions) */
 	portfolio_value: string;
+	/** Whether account is flagged as pattern day trader */
 	pattern_day_trader: boolean;
+	/** Whether trading is blocked */
 	trading_blocked: boolean;
+	/** Whether transfers are blocked */
 	transfers_blocked: boolean;
+	/** Whether account is blocked */
 	account_blocked: boolean;
+	/** Account creation timestamp */
 	created_at: string;
+	/** Whether trading is suspended by user */
 	trade_suspended_by_user: boolean;
+	/** Multiplier for margin accounts */
 	multiplier: string;
+	/** Whether shorting is enabled */
 	shorting_enabled: boolean;
+	/** Current equity value */
 	equity: string;
+	/** Previous day's equity */
 	last_equity: string;
+	/** Current long market value */
 	long_market_value: string;
+	/** Current short market value */
 	short_market_value: string;
+	/** Total position market value */
+	position_market_value: string;
+	/** Initial margin requirement */
 	initial_margin: string;
+	/** Maintenance margin requirement */
 	maintenance_margin: string;
+	/** Last maintenance margin */
 	last_maintenance_margin: string;
+	/** Special Memorandum Account balance */
 	sma: string;
+	/** Number of day trades in the last 5 trading days */
 	daytrade_count: number;
+	/** Date of the balance snapshot */
+	balance_asof: string;
+	/** Crypto tier level */
+	crypto_tier: number;
+	/** Intraday adjustments */
+	intraday_adjustments: string;
+	/** Pending regulatory TAF fees */
+	pending_reg_taf_fees: string;
+	/** Options approved level */
+	options_approved_level: number;
+	/** Options trading level */
+	options_trading_level: number;
+	/** Admin configurations object */
+	admin_configurations: Record<string, any>;
+	/** User configurations object (nullable) */
+	user_configurations: Record<string, any> | null;
 }
 
 /**

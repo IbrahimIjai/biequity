@@ -112,17 +112,91 @@ export async function exampleGetAccount(env: Env) {
 	try {
 		const account = await alpacaService.getAccount();
 
-		logger.info("Account information", {
+		logger.info("Complete account information", {
+			// Identity
+			id: account.id,
 			accountNumber: account.account_number,
-			buyingPower: account.buying_power,
-			cash: account.cash,
-			portfolioValue: account.portfolio_value,
+
+			// Status
 			status: account.status,
+			cryptoStatus: account.crypto_status,
+			tradingBlocked: account.trading_blocked,
+			accountBlocked: account.account_blocked,
+			transfersBlocked: account.transfers_blocked,
+
+			// Balances
+			cash: account.cash,
+			equity: account.equity,
+			portfolioValue: account.portfolio_value,
+
+			// Buying Power
+			buyingPower: account.buying_power,
+			regtBuyingPower: account.regt_buying_power,
+			daytradingBuyingPower: account.daytrading_buying_power,
+			effectiveBuyingPower: account.effective_buying_power,
+			nonMarginableBuyingPower: account.non_marginable_buying_power,
+			optionsBuyingPower: account.options_buying_power,
+
+			// Market Values
+			longMarketValue: account.long_market_value,
+			shortMarketValue: account.short_market_value,
+			positionMarketValue: account.position_market_value,
+
+			// Margin Info
+			initialMargin: account.initial_margin,
+			maintenanceMargin: account.maintenance_margin,
+			multiplier: account.multiplier,
+
+			// Trading Rules
+			patternDayTrader: account.pattern_day_trader,
+			daytradeCount: account.daytrade_count,
+
+			// Options
+			optionsApprovedLevel: account.options_approved_level,
+			optionsTradingLevel: account.options_trading_level,
+
+			// Other
+			shortingEnabled: account.shorting_enabled,
+			cryptoTier: account.crypto_tier,
+			createdAt: account.created_at,
+			balanceAsof: account.balance_asof,
 		});
 
 		return account;
 	} catch (error) {
 		logger.error("Failed to get account information", {
+			error: error instanceof AlpacaAPIError ? error.message : String(error),
+		});
+		throw error;
+	}
+}
+
+/**
+ * Example: Check if account is ready for trading
+ */
+export async function exampleCheckTradingEligibility(env: Env) {
+	const alpacaService = new AlpacaService(env);
+
+	try {
+		const result = await alpacaService.checkTradingEligibility();
+
+		if (result.canTrade) {
+			logger.info("Account is ready for trading", {
+				buyingPower: result.account.buying_power,
+				cash: result.account.cash,
+				portfolioValue: result.account.portfolio_value,
+			});
+		} else {
+			logger.warn("Account cannot trade", {
+				reasons: result.reasons,
+				status: result.account.status,
+				tradingBlocked: result.account.trading_blocked,
+			});
+		}
+
+		return result;
+	} catch (error) {
+		logger.error("Failed to check trading eligibility", {
 			error: error instanceof AlpacaAPIError ? error.message : String(error),
 		});
 		throw error;
