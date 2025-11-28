@@ -315,3 +315,129 @@ export interface GetAssetsParams {
 	/** Filter by attributes (comma-separated) */
 	attributes?: AssetAttribute[];
 }
+
+/**
+ * Activity category types
+ */
+export type ActivityCategory = "trade_activity" | "non_trade_activity";
+
+/**
+ * Activity type strings
+ */
+export type ActivityType =
+	| "FILL"
+	| "TRANS"
+	| "MISC"
+	| "ACATC"
+	| "ACATS"
+	| "CSD"
+	| "CSR"
+	| "DIV"
+	| "DIVCGL"
+	| "DIVCGS"
+	| "DIVFEE"
+	| "DIVFT"
+	| "DIVNRA"
+	| "DIVROC"
+	| "DIVTW"
+	| "DIVTXEX"
+	| "INT"
+	| "JNLC"
+	| "JNLS"
+	| "MA"
+	| "NC"
+	| "OPASN"
+	| "OPEXP"
+	| "OPXRC"
+	| "PTC"
+	| "PTR"
+	| "REORG"
+	| "SPIN"
+	| "SPLIT";
+
+/**
+ * Direction for sorting activities
+ */
+export type ActivityDirection = "asc" | "desc";
+
+/**
+ * Activity status
+ */
+export type ActivityStatus = "executed" | "pending" | "canceled" | "rejected";
+
+/**
+ * Account Activity information
+ * Base interface for all activity types
+ */
+export interface AccountActivity {
+	/** Activity ID */
+	id: string;
+	/** Activity type */
+	activity_type: ActivityType;
+	/** Date of the activity (YYYY-MM-DD) */
+	date: string;
+	/** Timestamp when activity was created */
+	created_at: string;
+	/** Net amount of the activity */
+	net_amount: string;
+	/** Description of the activity */
+	description: string;
+	/** Activity status */
+	status: ActivityStatus;
+}
+
+/**
+ * Trade Activity (FILL type)
+ * Extends base activity with trade-specific fields
+ */
+export interface TradeActivity extends AccountActivity {
+	activity_type: "FILL";
+	/** Symbol traded */
+	symbol?: string;
+	/** Quantity traded */
+	qty?: string;
+	/** Price per share */
+	price?: string;
+	/** Side of the trade */
+	side?: "buy" | "sell";
+	/** Order ID */
+	order_id?: string;
+	/** Transaction type */
+	transaction_type?: string;
+}
+
+/**
+ * Non-Trade Activity
+ * For transfers, dividends, fees, etc.
+ */
+export interface NonTradeActivity extends AccountActivity {
+	activity_type: Exclude<ActivityType, "FILL">;
+	/** Symbol if applicable */
+	symbol?: string;
+	/** Quantity if applicable */
+	qty?: string;
+	/** Per share amount if applicable */
+	per_share_amount?: string;
+}
+
+/**
+ * Query parameters for getting account activities
+ */
+export interface GetActivitiesParams {
+	/** Filter by specific activity types */
+	activity_types?: ActivityType[];
+	/** Filter by activity category (cannot be used with activity_types) */
+	category?: ActivityCategory;
+	/** Filter by specific date (YYYY-MM-DD or ISO format) */
+	date?: string;
+	/** Get activities before this date */
+	until?: string;
+	/** Get activities after this date */
+	after?: string;
+	/** Sort direction (default: desc) */
+	direction?: ActivityDirection;
+	/** Number of results per page (1-100, default: 100) */
+	page_size?: number;
+	/** Pagination token (ID of last item from previous page) */
+	page_token?: string;
+}

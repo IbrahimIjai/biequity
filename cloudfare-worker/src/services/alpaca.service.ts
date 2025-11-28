@@ -10,6 +10,10 @@ import type {
 	TimeInForce,
 	AlpacaAsset,
 	GetAssetsParams,
+	AccountActivity,
+	TradeActivity,
+	NonTradeActivity,
+	GetActivitiesParams,
 } from "../types/alpaca.types";
 
 /**
@@ -324,4 +328,123 @@ export class AlpacaService {
 		}
 	}
 
+	/**
+	 * Get account activities with optional filtering and pagination
+	 * @param params - Optional query parameters to filter activities
+	 * @returns Array of account activities
+	 */
+	async getAccountActivities(
+		params?: GetActivitiesParams,
+	): Promise<AccountActivity[]> {
+		try {
+			const queryParams: Record<string, string> = {};
+
+			// Add activity_types filter (comma-separated)
+			if (params?.activity_types && params.activity_types.length > 0) {
+				queryParams.activity_types = params.activity_types.join(",");
+			}
+
+			// Add category filter (cannot be used with activity_types)
+			if (params?.category && !params?.activity_types) {
+				queryParams.category = params.category;
+			}
+
+			// Add date filters
+			if (params?.date) {
+				queryParams.date = params.date;
+			}
+
+			if (params?.until) {
+				queryParams.until = params.until;
+			}
+
+			if (params?.after) {
+				queryParams.after = params.after;
+			}
+
+			// Add direction (default: desc)
+			if (params?.direction) {
+				queryParams.direction = params.direction;
+			}
+
+			// Add pagination
+			if (params?.page_size) {
+				queryParams.page_size = params.page_size.toString();
+			}
+
+			if (params?.page_token) {
+				queryParams.page_token = params.page_token;
+			}
+
+			logger.info("Fetching account activities", queryParams);
+
+			const response = await this.axiosInstance.get<AccountActivity[]>(
+				"/account/activities",
+				{
+					params: queryParams,
+				},
+			);
+
+			logger.info("Account activities retrieved successfully", {
+				count: response.data.length,
+				filters: queryParams,
+			});
+
+			return response.data;
+		} catch (error) {
+			logger.error("Failed to get account activities", {
+				params,
+				error: error instanceof AlpacaAPIError ? error.message : String(error),
+			});
+			throw error;
+		}
+	}
+
+	/**
+	 * Get trade activities only (fills)
+	 * Convenience method to filter for trade-related activities
+	 */
+	async getTradeActivities(
+		params?: Omit<GetActivitiesParams, "category" | "activity_types">,
+	): Promise<AccountActivity[]> {
+		return await this.getAccountActivities({
+			...params,
+			category: "trade_activity",
+		});
+	}
+
+	/**
+	 * Get non-trade activities (transfers, dividends, fees, etc.)
+	 * Convenience method to filter for non-trade activities
+	 */
+	async getNonTradeActivities(
+		params?: Omit<GetActivitiesParams, "category" | "activity_types">,
+	): Promise<AccountActivity[]> {
+		return await this.getAccountActivities({
+			...params,
+			category: "non_trade_activity",
+		});
+	}
+
+	/**
+	 * Get activities with pagination support
+	 * Returns activities and the next page token if available
+	 */
+	async getActivitiesPage(params?: GetActivitiesParams): Promise<{
+		activities: AccountActivity[];
+		nextPageToken: string | null;
+	}> {
+		const activities = await this.getAccountActivities(params);
+
+		// Extract the next page token from the last activity ID
+		const nextPageToken =
+			activities.length > 0 && activities.length === (params?.page_size || 100)
+				? activities[activities.length - 1].id
+				: null;
+
+		return {
+			activities,
+			nextPageToken,
+		};
+	}
 }

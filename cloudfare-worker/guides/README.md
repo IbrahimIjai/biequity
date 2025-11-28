@@ -1,274 +1,267 @@
-# Alpaca Trading API Integration Guides
+# Biequity Cloudflare Worker - Documentation
 
-Comprehensive documentation for the Biequity Cloudflare Worker's integration with Alpaca Trading API.
+This folder contains comprehensive guides for working with the Alpaca Trading API integration in the Biequity Cloudflare Worker.
 
 ## 📚 Available Guides
 
 ### [Order Placement Guide](./ORDER_PLACEMENT.md)
 
-Complete guide to placing market orders through Alpaca API.
+Complete guide to placing orders using the Alpaca Trading API.
 
-**Topics Covered:**
+**Topics covered:**
 
-- Axios configuration with interceptors
-- Order placement with validation
-- Error handling patterns
+- Market order placement
+- Order types and time-in-force options
+- Error handling for orders
+- Order validation
+- Order status tracking
 - Integration with blockchain events
-- Best practices for trading
 
-**Key Features:**
+**Key methods:**
 
-- ✅ Market orders only (as designed)
-- ✅ Comprehensive error handling
-- ✅ Automatic authentication
-- ✅ Detailed logging
+- `placeMarketOrder()`
+- `getOrder()`
+- `getAllOrders()`
+- `cancelOrder()`
+
+---
 
 ### [Account Information Guide](./ACCOUNT_INFO_GUIDE.md)
 
-Detailed reference for Alpaca account information and trading eligibility.
+Detailed explanation of account information and buying power.
 
-**Topics Covered:**
+**Topics covered:**
 
 - All 37 account fields explained
 - Understanding buying power
 - Account status and restrictions
-- Margin requirements
+- Trading eligibility checking
+- Margin account information
 - Pattern day trading rules
 
-**Key Features:**
+**Key methods:**
 
-- ✅ Complete field reference
-- ✅ Trading eligibility checker
-- ✅ Real-world examples
-- ✅ Common scenarios explained
+- `getAccount()`
+- `checkTradingEligibility()`
+
+---
 
 ### [Assets API Guide](./ASSETS_API_GUIDE.md)
 
-Master reference for querying and filtering tradable assets.
+Master list of tradable assets and filtering options.
 
-**Topics Covered:**
+**Topics covered:**
 
-- Getting asset lists with filters
-- Individual asset lookup
-- Asset properties and attributes
-- Validation before trading
-- Performance optimization
+- Retrieving asset lists
+- Filtering by exchange, status, and attributes
+- Asset properties (tradable, marginable, shortable, fractionable)
+- Validating symbols before trading
+- Finding fractional shares
+- Options-enabled stocks
 
-**Key Features:**
+**Key methods:**
 
-- ✅ Filter by exchange, status, attributes
-- ✅ Check tradability and features
-- ✅ Support for fractional shares
-- ✅ Short selling validation
+- `getAssets()`
+- `getAsset()`
+- `getTradableAssets()`
+
+---
+
+### [Activities API Guide](./ACTIVITIES_API_GUIDE.md)
+
+Complete account activity history and transaction tracking.
+
+**Topics covered:**
+
+- Retrieving account activities
+- Trade activities (fills)
+- Non-trade activities (dividends, transfers, fees)
+- Filtering by type, date, and category
+- Pagination for large datasets
+- Calculating dividends and cash flow
+- Activity monitoring
+
+**Key methods:**
+
+- `getAccountActivities()`
+- `getTradeActivities()`
+- `getNonTradeActivities()`
+- `getActivitiesPage()`
+
+---
 
 ## 🚀 Quick Start
 
-### 1. Place a Market Order
+### Installation
+
+```bash
+pnpm add axios
+```
+
+### Basic Usage
 
 ```typescript
 import { AlpacaService } from "./services/alpaca.service";
 
 const alpacaService = new AlpacaService(env);
 
-// Place a buy order
-const order = await alpacaService.placeMarketOrder(
-	"AAPL", // symbol
-	"1", // quantity
-	"buy", // side
-	"day", // time_in_force
-	false, // extended_hours
-);
-
-console.log(`Order placed: ${order.id}`);
-```
-
-### 2. Check Account Status
-
-```typescript
-// Get account information
+// Get account info
 const account = await alpacaService.getAccount();
+console.log(`Buying power: $${account.buying_power}`);
 
-console.log(`Buying Power: $${account.buying_power}`);
-console.log(`Cash: $${account.cash}`);
-console.log(`Status: ${account.status}`);
+// Place an order
+const order = await alpacaService.placeMarketOrder("AAPL", "1", "buy");
+console.log(`Order placed: ${order.id}`);
 
-// Check if ready to trade
-const { canTrade, reasons } = await alpacaService.checkTradingEligibility();
+// Get assets
+const assets = await alpacaService.getTradableAssets();
+console.log(`${assets.length} tradable assets`);
 
-if (canTrade) {
-	console.log("Ready to trade!");
-} else {
-	console.error("Cannot trade:", reasons);
-}
+// Get activities
+const activities = await alpacaService.getAccountActivities();
+console.log(`${activities.length} recent activities`);
 ```
 
-### 3. Validate an Asset
+## 📖 Documentation Structure
 
-```typescript
-// Get asset details
-const asset = await alpacaService.getAsset("TSLA");
+Each guide follows this structure:
 
-console.log(`Name: ${asset.name}`);
-console.log(`Tradable: ${asset.tradable}`);
-console.log(`Fractionable: ${asset.fractionable}`);
-console.log(`Shortable: ${asset.shortable}`);
+1. **Overview** - What the API does
+2. **Basic Usage** - Simple examples to get started
+3. **Filtering Options** - All available filters
+4. **Common Use Cases** - Real-world scenarios
+5. **Best Practices** - Performance tips and patterns
+6. **Error Handling** - How to handle failures
+7. **Common Pitfalls** - What to avoid
 
-// Get all tradable assets
-const tradableAssets = await alpacaService.getTradableAssets();
-console.log(`${tradableAssets.length} tradable assets available`);
-```
+## 🛠️ Code Examples
 
-## 🔧 Architecture Overview
+All guides include extensive code examples. You can also find complete example implementations in:
 
-```
-cloudfare-worker/
-├── src/
-│   ├── services/
-│   │   ├── alpaca.service.ts      # Main trading service
-│   │   └── web3.service.ts        # Blockchain integration
-│   ├── utils/
-│   │   ├── axios.ts               # Configured HTTP client with interceptors
-│   │   └── logger.ts              # Logging utility
-│   ├── types/
-│   │   └── alpaca.types.ts        # Complete TypeScript types
-│   └── examples/
-│       └── order-placement-example.ts  # Usage examples
-└── guides/                         # 📖 You are here!
-    ├── ORDER_PLACEMENT.md
-    ├── ACCOUNT_INFO_GUIDE.md
-    └── ASSETS_API_GUIDE.md
-```
-
-## 📖 Guide Selection Helper
-
-**I want to...**
-
-| Goal                      | Guide to Read                                        |
-| ------------------------- | ---------------------------------------------------- |
-| Place orders              | [Order Placement Guide](./ORDER_PLACEMENT.md)        |
-| Check buying power        | [Account Information Guide](./ACCOUNT_INFO_GUIDE.md) |
-| Validate symbols          | [Assets API Guide](./ASSETS_API_GUIDE.md)            |
-| Handle errors             | [Order Placement Guide](./ORDER_PLACEMENT.md)        |
-| Filter stocks             | [Assets API Guide](./ASSETS_API_GUIDE.md)            |
-| Check margin requirements | [Account Information Guide](./ACCOUNT_INFO_GUIDE.md) |
-| Find fractional shares    | [Assets API Guide](./ASSETS_API_GUIDE.md)            |
-| Understand account status | [Account Information Guide](./ACCOUNT_INFO_GUIDE.md) |
+- `src/examples/order-placement-example.ts`
+- `src/examples/activities-example.ts`
 
 ## 🔑 Key Concepts
 
 ### Authentication
 
-All API calls are automatically authenticated using axios interceptors. No need to manually add headers.
+All API calls automatically include authentication headers via the axios interceptor:
+
+```typescript
+// Configured automatically in createAlpacaAxiosInstance()
+headers: {
+  'APCA-API-KEY-ID': env.ALPACA_API_KEY,
+  'APCA-API-SECRET-KEY': env.ALPACA_SECRET_KEY
+}
+```
 
 ### Error Handling
 
-Custom `AlpacaAPIError` class provides structured error information:
+All API methods use the custom `AlpacaAPIError` class:
 
-- Status code
-- Error message
-- Error code
-- Additional data
+```typescript
+try {
+	const account = await alpacaService.getAccount();
+} catch (error) {
+	if (error instanceof AlpacaAPIError) {
+		console.error(`Error ${error.statusCode}: ${error.message}`);
+	}
+}
+```
 
 ### Logging
 
-All operations are logged with detailed context for debugging and monitoring.
+All operations are logged using the logger utility:
 
-### Type Safety
-
-Complete TypeScript types for all API requests and responses.
-
-## 🌟 Features
-
-- ✅ **Market Orders** - Place buy/sell orders instantly
-- ✅ **Account Management** - Get balances, buying power, restrictions
-- ✅ **Asset Discovery** - Search and filter tradable securities
-- ✅ **Position Tracking** - Monitor open positions
-- ✅ **Order Management** - Track, cancel, and query orders
-- ✅ **Blockchain Integration** - Automatically trade based on smart contract events
-- ✅ **Error Recovery** - Comprehensive error handling and logging
-- ✅ **Type Safety** - Full TypeScript support
-
-## 🔐 Environment Variables
-
-Required in your `.env` or Cloudflare Worker secrets:
-
-```env
-ALPACA_API_KEY=your_api_key_here
-ALPACA_SECRET_KEY=your_secret_key_here
+```typescript
+logger.info("Operation completed", { data });
+logger.error("Operation failed", { error });
 ```
+
+## 🔗 API Reference
+
+### AlpacaService Methods
+
+**Account:**
+
+- `getAccount()` - Get account information
+- `checkTradingEligibility()` - Check if account can trade
+
+**Orders:**
+
+- `placeMarketOrder()` - Place a market order
+- `getOrder()` - Get order by ID
+- `getAllOrders()` - Get all orders
+- `cancelOrder()` - Cancel an order
+
+**Positions:**
+
+- `getPosition()` - Get position for symbol
+- `getAllPositions()` - Get all positions
+
+**Assets:**
+
+- `getAssets()` - Get assets with filtering
+- `getAsset()` - Get specific asset
+- `getTradableAssets()` - Get tradable assets only
+
+**Activities:**
+
+- `getAccountActivities()` - Get activities with filtering
+- `getTradeActivities()` - Get trade activities only
+- `getNonTradeActivities()` - Get non-trade activities
+- `getActivitiesPage()` - Get activities with pagination support
+
+## 📊 Type Definitions
+
+All types are defined in `src/types/alpaca.types.ts`:
+
+- `AlpacaAccount` - Account information
+- `OrderResponse` - Order details
+- `AlpacaAsset` - Asset information
+- `AlpacaPosition` - Position details
+- `AccountActivity` - Activity information
+- Request/response types for all operations
 
 ## 🧪 Testing
 
-The system uses Alpaca's paper trading environment by default:
+The codebase uses Alpaca's **paper trading environment**:
 
 - Base URL: `https://paper-api.alpaca.markets/v2`
 - No real money involved
-- Simulated market conditions
-- Perfect for testing and development
+- Full market simulation
+
+## 🔧 Configuration
+
+Required environment variables:
+
+```typescript
+interface Env {
+	ALPACA_API_KEY: string;
+	ALPACA_SECRET_KEY: string;
+	// ... other vars
+}
+```
 
 ## 📚 Additional Resources
 
-### Alpaca Documentation
-
-- [Trading API Reference](https://alpaca.markets/docs/api-references/trading-api/)
-- [Paper Trading](https://alpaca.markets/docs/trading/paper-trading/)
-- [Order Types](https://alpaca.markets/docs/trading/orders/)
-- [Account API](https://alpaca.markets/docs/api-references/trading-api/account/)
-- [Assets API](https://alpaca.markets/docs/api-references/trading-api/assets/)
-
-### Code Examples
-
-See `src/examples/order-placement-example.ts` for comprehensive code examples covering all use cases.
-
-## 🐛 Troubleshooting
-
-### Orders Being Rejected (403)
-
-- Check account buying power
-- Verify account is not restricted
-- Ensure market is open (or extended hours is enabled)
-
-### Orders Invalid (422)
-
-- Verify symbol exists and is tradable
-- Check quantity is positive
-- Ensure all required fields are provided
-
-### Authentication Errors (401)
-
-- Verify API key and secret are correct
-- Check keys are for paper trading if using paper API
-- Ensure keys haven't expired
-
-### Asset Not Found (404)
-
-- Verify symbol spelling
-- Check if asset is listed on Alpaca
-- Try searching with `getAssets()` first
-
-## 💡 Tips
-
-1. **Always validate** symbols before placing orders
-2. **Check account status** before trading
-3. **Use tradable filter** when searching assets
-4. **Cache asset lists** to reduce API calls
-5. **Monitor logs** for debugging issues
-6. **Test in paper** before going live
+- [Alpaca API Documentation](https://alpaca.markets/docs/api-references/trading-api/)
+- [Alpaca Paper Trading](https://alpaca.markets/docs/trading/paper-trading/)
+- [Order Types Guide](https://alpaca.markets/docs/trading/orders/)
 
 ## 🤝 Contributing
 
-When adding new features:
+When adding new API endpoints:
 
-1. Update relevant guide documentation
-2. Add examples to `order-placement-example.ts`
-3. Include proper TypeScript types
-4. Add comprehensive error handling
-5. Include logging statements
+1. Add types to `src/types/alpaca.types.ts`
+2. Add methods to `src/services/alpaca.service.ts`
+3. Add examples to `src/examples/`
+4. Create a guide in `guides/`
+5. Update this README
 
-## 📝 License
+## 📝 Notes
 
-Part of the Biequity project.
-
----
-
-**Need Help?** Check the specific guides for detailed information, or review the code examples in `src/examples/`.
+- All dollar amounts are returned as strings to preserve precision
+- Dates support both `YYYY-MM-DD` and ISO 8601 formats
+- Pagination uses the ID of the last item as the page token
+- All methods include comprehensive error handling and logging
