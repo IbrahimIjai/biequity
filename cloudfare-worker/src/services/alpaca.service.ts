@@ -25,7 +25,7 @@ export class AlpacaService {
 	constructor(env: Env) {
 		this.axiosInstance = createAlpacaAxiosInstance(
 			env.ALPACA_API_KEY,
-			env.ALPACA_SECRET_KEY,
+			env.ALPACA_SECRET,
 		);
 	}
 

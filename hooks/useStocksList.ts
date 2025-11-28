@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { SUPPORTED_STOCKS_ENDPOINT } from "@/config/api";
 import { type Token } from "@/lib/tokens-list";
 
@@ -45,23 +46,16 @@ export function useStocksList() {
 		queryKey: ["stocks-list", "supported"],
 		queryFn: async () => {
 			try {
-				// Fetch from our API endpoint (already filtered server-side)
-				const response = await fetch(SUPPORTED_STOCKS_ENDPOINT, {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
+				const response = await axios.get<AlpacaAsset[]>(
+					SUPPORTED_STOCKS_ENDPOINT,
+					{
+						headers: {
+							"Content-Type": "application/json",
+						},
 					},
-				});
+				);
 
-				if (!response.ok) {
-					throw new Error(`Failed to fetch stocks: ${response.statusText}`);
-				}
-
-				const data = (await response.json()) as AlpacaAsset[];
-
-				// Transform to Token type
-				// No need to filter here - server already filtered to supported symbols
-				const tokens = data.map(transformAssetToToken);
+				const tokens = response.data.map(transformAssetToToken);
 
 				return tokens;
 			} catch (error) {
