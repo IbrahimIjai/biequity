@@ -15,12 +15,14 @@ import { usePricesStore } from "@/store/prices-store";
 import { useMemo } from "react";
 import { useStockPrices } from "@/hooks/useStockPrices";
 import { formatDecimal } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
 	tokens: readonly Token[];
 	currentToken?: Token;
 	children?: React.ReactNode;
+	isLoading?: boolean;
 }
 
 export function TokenSelectorDialog({
@@ -28,6 +30,7 @@ export function TokenSelectorDialog({
 	tokens,
 	currentToken,
 	children,
+	isLoading = false,
 }: TokenSelectorDialogProps) {
 	const [open, setOpen] = React.useState(false);
 	const { getBalance } = useBalancesStore();
@@ -80,45 +83,59 @@ export function TokenSelectorDialog({
 					<DialogTitle>Select Token</DialogTitle>
 				</DialogHeader>
 				<div className="mt-2 space-y-2">
-					{tokens.map((token) => (
-						<button
-							key={token.symbol}
-							onClick={() => handleSelect(token)}
-							className={`w-full flex items-center gap-3 p-3 border-2 rounded transition-all hover:bg-muted ${
-								currentToken?.symbol === token.symbol
-									? "border-primary bg-primary/10"
-									: "border-border hover:border-primary"
-							}`}>
-							<Avatar className="size-8 border">
-								<AvatarImage src={token.icon} alt={token.name} />
-								<AvatarFallback className="text-xs font-bold">
-									{token.symbol[0]}
-								</AvatarFallback>
-							</Avatar>
+					{isLoading ? (
+						<div className="flex flex-col items-center justify-center py-8 space-y-3">
+							<Loader2 className="h-8 w-8 animate-spin text-primary" />
+							<p className="text-sm text-muted-foreground">Loading stocks...</p>
+						</div>
+					) : tokens.length === 0 ? (
+						<div className="flex flex-col items-center justify-center py-8 space-y-2">
+							<p className="text-sm text-muted-foreground">
+								No tokens available
+							</p>
+						</div>
+					) : (
+						tokens.map((token) => (
+							<button
+								key={token.symbol}
+								onClick={() => handleSelect(token)}
+								className={`w-full flex items-center gap-3 p-3 border-2 rounded transition-all hover:bg-muted ${
+									currentToken?.symbol === token.symbol
+										? "border-primary bg-primary/10"
+										: "border-border hover:border-primary"
+								}`}>
+								<Avatar className="size-8 border">
+									<AvatarImage src={token.icon} alt={token.name} />
+									<AvatarFallback className="text-xs font-bold">
+										{token.symbol[0]}
+									</AvatarFallback>
+								</Avatar>
 
-							<div className="text-left flex-1">
-								<div className="font-bold text-sm">{token.symbol}</div>
-								<div className="text-xs text-muted-foreground">
-									{token.name}
-								</div>
-							</div>
-							<div className="flex flex-col justify-end">
-								<div className="ml-auto text-right text-xs tabular-nums text-muted-foreground">
-									{getBalance(token.address ?? token.symbol)?.formatted ?? "0"}
-								</div>
-								{token.feedId ? (
-									<div className="text-[10px] text-muted-foreground">
-										{(() => {
-											const entry = getPrice(token.symbol);
-											if (!entry || entry.priceUsd <= 0) return null;
-											const formatted = formatDecimal(entry.priceUsd, 2);
-											return `${formatted} ${token.symbol.toUpperCase()}/USD`;
-										})()}
+								<div className="text-left flex-1">
+									<div className="font-bold text-sm">{token.symbol}</div>
+									<div className="text-xs text-muted-foreground">
+										{token.name}
 									</div>
-								) : null}
-							</div>
-						</button>
-					))}
+								</div>
+								<div className="flex flex-col justify-end">
+									<div className="ml-auto text-right text-xs tabular-nums text-muted-foreground">
+										{getBalance(token.address ?? token.symbol)?.formatted ??
+											"0"}
+									</div>
+									{token.feedId ? (
+										<div className="text-[10px] text-muted-foreground">
+											{(() => {
+												const entry = getPrice(token.symbol);
+												if (!entry || entry.priceUsd <= 0) return null;
+												const formatted = formatDecimal(entry.priceUsd, 2);
+												return `${formatted} ${token.symbol.toUpperCase()}/USD`;
+											})()}
+										</div>
+									) : null}
+								</div>
+							</button>
+						))
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>

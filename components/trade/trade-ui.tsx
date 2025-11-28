@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBalancesStore } from "@/store/balances-store";
 import { usePricesStore } from "@/store/prices-store";
 import { useStockPrices } from "@/hooks/useStockPrices";
+import { useStocksList } from "@/hooks/useStocksList";
 import { TradeTransactionDialog } from "./trade-transaction-dialog";
 import { formatDecimal, formatSignificantFigures } from "@/lib/utils";
 
@@ -33,7 +34,18 @@ export function SwapInterface() {
 		"amount0" | "amount1"
 	>("amount0");
 
-	const allTokens = [...STABLECOINS, ...STOCKS];
+	// Fetch dynamic stocks list from API
+	const {
+		data: dynamicStocks,
+		isLoading: isLoadingStocks,
+		error: stocksError,
+	} = useStocksList();
+
+	// Use dynamic stocks if available, fallback to static STOCKS
+	const stocksList =
+		dynamicStocks && dynamicStocks.length > 0 ? dynamicStocks : STOCKS;
+
+	const allTokens = [...STABLECOINS, ...stocksList];
 	const tokensWithFeedId = useMemo(
 		() => allTokens.filter((t) => typeof t.feedId === "string"),
 		[allTokens],
@@ -106,9 +118,14 @@ export function SwapInterface() {
 
 	// Determine trade type and button state
 	const isBuyingStock =
-		token0.symbol === "USDC" && STOCKS.some((s) => s.symbol === token1.symbol);
+		token0.symbol === "USDC" &&
+		stocksList.some(
+			(s: (typeof stocksList)[number]) => s.symbol === token1.symbol,
+		);
 	const isRedeemingStock =
-		STOCKS.some((s) => s.symbol === token0.symbol) && token1.symbol === "USDC";
+		stocksList.some(
+			(s: (typeof stocksList)[number]) => s.symbol === token0.symbol,
+		) && token1.symbol === "USDC";
 	const isValidTrade = isBuyingStock || isRedeemingStock;
 
 	// Button text logic
@@ -184,8 +201,9 @@ export function SwapInterface() {
 							<div className="flex items-center justify-between">
 								<TokenSelectorDialog
 									onSelect={setToken1}
-									tokens={STOCKS}
-									currentToken={token1}>
+									tokens={stocksList}
+									currentToken={token1}
+									isLoading={isLoadingStocks}>
 									<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
 										<Avatar className="size-10 border-2 border-border shadow">
 											<AvatarImage src={token1.icon} alt={token1.name} />

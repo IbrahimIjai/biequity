@@ -55,3 +55,10 @@ export const STOCKS = [
 
 export const ALL_TOKENS = [...STABLECOINS, ...STOCKS] as const;
 export type TokenSymbol = (typeof ALL_TOKENS)[number]["symbol"];
+
+/**
+ * Supported stock symbols that we currently support on the platform
+ * This list is used to filter the stocks from the Alpaca API
+ */
+export const SUPPORTED_STOCK_SYMBOLS = ["AAPL", "TSLA", "MSFT"] as const;
+export type SupportedStockSymbol = (typeof SUPPORTED_STOCK_SYMBOLS)[number];

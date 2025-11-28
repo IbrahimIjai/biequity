@@ -19,6 +19,7 @@
     "@tailwindcss/postcss": "^4.1.14",
     "@tanstack/react-query": "^5.81.5",
     "@wagmi/core": "^2.22.1",
+    "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.554.0",
