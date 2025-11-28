@@ -275,64 +275,6 @@ export class AlpacaService {
 	}
 
 	/**
-	 * Get order by ID
-	 */
-	async getOrder(orderId: string): Promise<OrderResponse> {
-		try {
-			const response = await this.axiosInstance.get<OrderResponse>(
-				`/orders/${orderId}`,
-			);
-			return response.data;
-		} catch (error) {
-			logger.error("Failed to get order", {
-				orderId,
-				error: error instanceof AlpacaAPIError ? error.message : String(error),
-			});
-			throw error;
-		}
-	}
-
-	/**
-	 * Get all orders
-	 */
-	async getAllOrders(
-		status?: "open" | "closed" | "all",
-	): Promise<OrderResponse[]> {
-		try {
-			const params = status ? { status } : {};
-			const response = await this.axiosInstance.get<OrderResponse[]>(
-				"/orders",
-				{
-					params,
-				},
-			);
-			return response.data;
-		} catch (error) {
-			logger.error("Failed to get orders", {
-				status,
-				error: error instanceof AlpacaAPIError ? error.message : String(error),
-			});
-			throw error;
-		}
-	}
-
-	/**
-	 * Cancel an order
-	 */
-	async cancelOrder(orderId: string): Promise<void> {
-		try {
-			await this.axiosInstance.delete(`/orders/${orderId}`);
-			logger.info("Order cancelled successfully", { orderId });
-		} catch (error) {
-			logger.error("Failed to cancel order", {
-				orderId,
-				error: error instanceof AlpacaAPIError ? error.message : String(error),
-			});
-			throw error;
-		}
-	}
-
-	/**
 	 * Get assets list with optional filtering
 	 * @param params - Optional query parameters to filter assets
 	 * @returns Array of assets matching the filter criteria
@@ -382,54 +324,4 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get a specific asset by symbol
-	 * @param symbol - The asset symbol to retrieve
-	 * @returns Asset information for the specified symbol
-	 */
-	async getAsset(symbol: string): Promise<AlpacaAsset> {
-		try {
-			logger.info("Fetching asset by symbol", { symbol });
-
-			const response = await this.axiosInstance.get<AlpacaAsset>(
-				`/assets/${symbol.trim().toUpperCase()}`,
-			);
-
-			logger.info("Asset retrieved successfully", {
-				symbol: response.data.symbol,
-				name: response.data.name,
-				tradable: response.data.tradable,
-				status: response.data.status,
-			});
-
-			return response.data;
-		} catch (error) {
-			if (error instanceof AlpacaAPIError && error.statusCode === 404) {
-				logger.error("Asset not found", { symbol });
-				throw new AlpacaAPIError(
-					404,
-					`Asset with symbol '${symbol}' not found`,
-					null,
-					"ASSET_NOT_FOUND",
-				);
-			}
-
-			logger.error("Failed to get asset", {
-				symbol,
-				error: error instanceof AlpacaAPIError ? error.message : String(error),
-			});
-			throw error;
-		}
-	}
-
-	/**
-	 * Get only tradable assets
-	 * Convenience method to filter for assets that can be traded
-	 */
-	async getTradableAssets(
-		params?: Omit<GetAssetsParams, "status">,
-	): Promise<AlpacaAsset[]> {
-		const assets = await this.getAssets({ ...params, status: "active" });
-		return assets.filter((asset) => asset.tradable);
-	}
 }
