@@ -1,6 +1,8 @@
 import { ContractHelper } from "../web3/contract-helper";
 import { getViemClients } from "../web3/viem-client";
 import { AlpacaService } from "./alpaca.service";
+import { AlpacaAPIError } from "../utils/axios";
+import { logger } from "../utils/logger";
 
 export class Web3Service {
 	private contractHelper: ContractHelper;
@@ -30,8 +32,9 @@ export class Web3Service {
 
 		const results = [];
 		for (const event of events) {
-			const { symbol, amount, netUsdc } = event.args;
-			if (!symbol || !amount || !netUsdc) continue;
+			const { symbol, amount } = event.args;
+			const netUsdc = "netUsdc" in event.args ? event.args.netUsdc : undefined;
+			if (!symbol || !amount) continue;
 
 			// TODO: Check if this event was already processed (idempotency)
 
@@ -53,8 +56,28 @@ export class Web3Service {
 				// If 1 token = 1 stock share, then:
 				const qty = Number(amount) / 1e18;
 
-				console.log(`Processing Buy: ${qty} ${symbol}`);
-				const order = await this.alpacaService.placeOrder(symbol, qty, "buy");
+				logger.info(`Processing Buy: ${qty} ${symbol}`, {
+					symbol,
+					qty,
+					amount: amount.toString(),
+					...(netUsdc && { netUsdc: netUsdc.toString() }),
+				});
+
+				// Place market order with proper error handling
+				const order = await this.alpacaService.placeMarketOrder(
+					symbol,
+					qty.toString(),
+					"buy",
+					"day", // time_in_force
+					false, // extended_hours
+				);
+
+				logger.info(`Buy order placed successfully`, {
+					orderId: order.id,
+					symbol: order.symbol,
+					qty: order.qty,
+					status: order.status,
+				});
 
 				// 3. Settle Tokens on Chain
 				// Once order is filled (or immediately if we trust it will fill), we mark tokens as backed.
@@ -62,10 +85,59 @@ export class Web3Service {
 				// Here, we'll optimistically settle.
 				const tx = await this.contractHelper.settleTokens(symbol, amount);
 
-				results.push({ event, order, tx });
+				logger.info(`Tokens settled on chain`, {
+					symbol,
+					amount: amount.toString(),
+					txHash: tx,
+				});
+
+				results.push({
+					success: true,
+					event,
+					order: {
+						id: order.id,
+						symbol: order.symbol,
+						qty: order.qty,
+						status: order.status,
+						side: order.side,
+					},
+					tx,
+				});
 			} catch (error) {
-				console.error(`Failed to process buy for ${symbol}:`, error);
-				results.push({ event, error });
+				if (error instanceof AlpacaAPIError) {
+					logger.error(`Alpaca API error processing buy for ${symbol}`, {
+						symbol,
+						statusCode: error.statusCode,
+						message: error.message,
+						code: error.code,
+						data: error.data,
+					});
+
+					results.push({
+						success: false,
+						event,
+						error: {
+							type: "ALPACA_API_ERROR",
+							statusCode: error.statusCode,
+							message: error.message,
+							code: error.code,
+						},
+					});
+				} else {
+					logger.error(`Failed to process buy for ${symbol}`, {
+						symbol,
+						error: error instanceof Error ? error.message : String(error),
+					});
+
+					results.push({
+						success: false,
+						event,
+						error: {
+							type: "UNKNOWN_ERROR",
+							message: error instanceof Error ? error.message : String(error),
+						},
+					});
+				}
 			}
 		}
 		return results;
@@ -89,18 +161,78 @@ export class Web3Service {
 
 			try {
 				const qty = Number(amount) / 1e18;
-				console.log(`Processing Sell: ${qty} ${symbol}`);
 
-				// 1. Place Sell Order on Alpaca
-				const order = await this.alpacaService.placeOrder(symbol, qty, "sell");
+				logger.info(`Processing Sell: ${qty} ${symbol}`, {
+					symbol,
+					qty,
+					amount: amount.toString(),
+				});
+
+				// 1. Place Sell Order on Alpaca using market order
+				const order = await this.alpacaService.placeMarketOrder(
+					symbol,
+					qty.toString(),
+					"sell",
+					"day", // time_in_force
+					false, // extended_hours
+				);
+
+				logger.info(`Sell order placed successfully`, {
+					orderId: order.id,
+					symbol: order.symbol,
+					qty: order.qty,
+					status: order.status,
+				});
 
 				// 2. Withdraw USD and bridge back to USDC (Manual/Complex step)
 				// For this demo, we just place the sell order to unback the tokens.
 
-				results.push({ event, order });
+				results.push({
+					success: true,
+					event,
+					order: {
+						id: order.id,
+						symbol: order.symbol,
+						qty: order.qty,
+						status: order.status,
+						side: order.side,
+					},
+				});
 			} catch (error) {
-				console.error(`Failed to process sell for ${symbol}:`, error);
-				results.push({ event, error });
+				if (error instanceof AlpacaAPIError) {
+					logger.error(`Alpaca API error processing sell for ${symbol}`, {
+						symbol,
+						statusCode: error.statusCode,
+						message: error.message,
+						code: error.code,
+						data: error.data,
+					});
+
+					results.push({
+						success: false,
+						event,
+						error: {
+							type: "ALPACA_API_ERROR",
+							statusCode: error.statusCode,
+							message: error.message,
+							code: error.code,
+						},
+					});
+				} else {
+					logger.error(`Failed to process sell for ${symbol}`, {
+						symbol,
+						error: error instanceof Error ? error.message : String(error),
+					});
+
+					results.push({
+						success: false,
+						event,
+						error: {
+							type: "UNKNOWN_ERROR",
+							message: error instanceof Error ? error.message : String(error),
+						},
+					});
+				}
 			}
 		}
 		return results;
