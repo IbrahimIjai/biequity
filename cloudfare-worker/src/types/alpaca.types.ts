@@ -231,3 +231,87 @@ export interface AlpacaPosition {
 	lastday_price: string;
 	change_today: string;
 }
+
+/**
+ * Asset status types
+ */
+export type AssetStatus = "active" | "inactive";
+
+/**
+ * Asset class types
+ */
+export type AssetClass = "us_equity" | "crypto";
+
+/**
+ * Exchange types
+ */
+export type Exchange =
+	| "AMEX"
+	| "ARCA"
+	| "BATS"
+	| "NYSE"
+	| "NASDAQ"
+	| "NYSEARCA"
+	| "OTC";
+
+/**
+ * Asset attribute types
+ */
+export type AssetAttribute =
+	| "ptp_no_exception"
+	| "ptp_with_exception"
+	| "ipo"
+	| "has_options"
+	| "options_late_close"
+	| "fractional_eh_enabled";
+
+/**
+ * Alpaca Asset information
+ * Response from GET /v2/assets
+ */
+export interface AlpacaAsset {
+	/** Asset UUID */
+	id: string;
+	/** Asset class (e.g., "us_equity") */
+	class: AssetClass;
+	/** Exchange where asset is traded */
+	exchange: Exchange;
+	/** Asset symbol/ticker */
+	symbol: string;
+	/** Full name of the asset */
+	name: string;
+	/** Asset status ("active" or "inactive") */
+	status: AssetStatus;
+	/** Whether asset is tradable on Alpaca */
+	tradable: boolean;
+	/** Whether asset can be traded on margin */
+	marginable: boolean;
+	/** Maintenance margin requirement percentage */
+	maintenance_margin_requirement: number;
+	/** Margin requirement for long positions */
+	margin_requirement_long: string;
+	/** Margin requirement for short positions */
+	margin_requirement_short: string;
+	/** Whether asset can be shorted */
+	shortable: boolean;
+	/** Whether asset is easy to borrow for shorting */
+	easy_to_borrow: boolean;
+	/** Whether fractional shares are supported */
+	fractionable: boolean;
+	/** List of special attributes for this asset */
+	attributes: AssetAttribute[];
+}
+
+/**
+ * Query parameters for getting assets
+ */
+export interface GetAssetsParams {
+	/** Filter by asset status */
+	status?: AssetStatus;
+	/** Filter by asset class */
+	asset_class?: AssetClass;
+	/** Filter by exchange */
+	exchange?: Exchange;
+	/** Filter by attributes (comma-separated) */
+	attributes?: AssetAttribute[];
+}

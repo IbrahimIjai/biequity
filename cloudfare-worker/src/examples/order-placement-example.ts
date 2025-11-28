@@ -341,3 +341,196 @@ export async function exampleTrackOrder(env: Env, orderId: string) {
 		throw error;
 	}
 }
+
+/**
+ * Example: Get all assets with filtering
+ */
+export async function exampleGetAssets(env: Env) {
+	const alpacaService = new AlpacaService(env);
+
+	try {
+		// Get all active US equities (default behavior)
+		const allAssets = await alpacaService.getAssets();
+
+		logger.info("All assets retrieved", {
+			count: allAssets.length,
+		});
+
+		// Get only tradable assets
+		const tradableAssets = await alpacaService.getTradableAssets();
+
+		logger.info("Tradable assets", {
+			count: tradableAssets.length,
+		});
+
+		// Get assets from specific exchange
+		const nyseAssets = await alpacaService.getAssets({
+			status: "active",
+			asset_class: "us_equity",
+			exchange: "NYSE",
+		});
+
+		logger.info("NYSE assets", {
+			count: nyseAssets.length,
+		});
+
+		// Get assets with specific attributes (e.g., has options)
+		const optionsAssets = await alpacaService.getAssets({
+			status: "active",
+			attributes: ["has_options"],
+		});
+
+		logger.info("Assets with options", {
+			count: optionsAssets.length,
+		});
+
+		// Get assets with multiple attributes
+		const specialAssets = await alpacaService.getAssets({
+			status: "active",
+			attributes: ["has_options", "fractional_eh_enabled"],
+		});
+
+		logger.info("Assets with options and fractional extended hours", {
+			count: specialAssets.length,
+		});
+
+		return {
+			allAssets,
+			tradableAssets,
+			nyseAssets,
+			optionsAssets,
+			specialAssets,
+		};
+	} catch (error) {
+		logger.error("Failed to get assets", {
+			error: error instanceof AlpacaAPIError ? error.message : String(error),
+		});
+		throw error;
+	}
+}
+
+/**
+ * Example: Get a specific asset by symbol
+ */
+export async function exampleGetAsset(env: Env, symbol: string) {
+	const alpacaService = new AlpacaService(env);
+
+	try {
+		const asset = await alpacaService.getAsset(symbol);
+
+		logger.info("Asset details", {
+			symbol: asset.symbol,
+			name: asset.name,
+			exchange: asset.exchange,
+			status: asset.status,
+			tradable: asset.tradable,
+			marginable: asset.marginable,
+			shortable: asset.shortable,
+			fractionable: asset.fractionable,
+			easyToBorrow: asset.easy_to_borrow,
+			attributes: asset.attributes,
+			maintenanceMarginRequirement: asset.maintenance_margin_requirement,
+		});
+
+		return asset;
+	} catch (error) {
+		if (error instanceof AlpacaAPIError && error.code === "ASSET_NOT_FOUND") {
+			logger.warn(`Asset '${symbol}' does not exist`);
+		} else {
+			logger.error("Failed to get asset", {
+				symbol,
+				error: error instanceof AlpacaAPIError ? error.message : String(error),
+			});
+		}
+		throw error;
+	}
+}
+
+/**
+ * Example: Check if a symbol is tradable before placing an order
+ */
+export async function exampleCheckAssetTradability(env: Env, symbol: string) {
+	const alpacaService = new AlpacaService(env);
+
+	try {
+		const asset = await alpacaService.getAsset(symbol);
+
+		if (asset.status !== "active") {
+			logger.warn(`${symbol} is not active`, { status: asset.status });
+			return false;
+		}
+
+		if (!asset.tradable) {
+			logger.warn(`${symbol} is not tradable on Alpaca`);
+			return false;
+		}
+
+		logger.info(`${symbol} is tradable`, {
+			name: asset.name,
+			exchange: asset.exchange,
+			marginable: asset.marginable,
+			shortable: asset.shortable,
+			fractionable: asset.fractionable,
+		});
+
+		return true;
+	} catch (error) {
+		logger.error("Failed to check asset tradability", {
+			symbol,
+			error: error instanceof AlpacaAPIError ? error.message : String(error),
+		});
+		return false;
+	}
+}
+
+/**
+ * Example: Find assets by criteria
+ */
+export async function exampleFindAssetsByCriteria(env: Env) {
+	const alpacaService = new AlpacaService(env);
+
+	try {
+		// Find all fractional shares available on major exchanges
+		const tradableAssets = await alpacaService.getTradableAssets({
+			asset_class: "us_equity",
+		});
+
+		const fractionalAssets = tradableAssets.filter(
+			(asset) =>
+				asset.fractionable && ["NYSE", "NASDAQ"].includes(asset.exchange),
+		);
+
+		logger.info("Fractional assets on NYSE/NASDAQ", {
+			count: fractionalAssets.length,
+			sample: fractionalAssets.slice(0, 5).map((a) => ({
+				symbol: a.symbol,
+				name: a.name,
+				exchange: a.exchange,
+			})),
+		});
+
+		// Find marginable and shortable assets
+		const marginShortAssets = tradableAssets.filter(
+			(asset) => asset.marginable && asset.shortable && asset.easy_to_borrow,
+		);
+
+		logger.info("Marginable and easily shortable assets", {
+			count: marginShortAssets.length,
+			sample: marginShortAssets.slice(0, 5).map((a) => ({
+				symbol: a.symbol,
+				name: a.name,
+				maintenanceMargin: a.maintenance_margin_requirement,
+			})),
+		});
+
+		return {
+			fractionalAssets,
+			marginShortAssets,
+		};
+	} catch (error) {
+		logger.error("Failed to find assets by criteria", {
+			error: error instanceof AlpacaAPIError ? error.message : String(error),
+		});
+		throw error;
+	}
+}
