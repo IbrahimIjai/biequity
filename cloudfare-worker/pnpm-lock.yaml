@@ -16,7 +16,7 @@ importers:
         version: 4.10.6
       viem:
         specifier: ^2.40.0
-        version: 2.40.0(zod@3.22.3)
+        version: 2.41.2(zod@3.22.3)
     devDependencies:
       wrangler:
         specifier: ^4.4.0
@@ -610,8 +610,8 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
-  viem@2.40.0:
-    resolution: {integrity: sha512-Y5XoBUzkNiIGfIR+Y7uD6e4xFDsdzR4PgxWgUwSPcRUq86XI+bxZjvvrYU/s+amgt1LpOvvIMdmgQ8+ZIaNi0g==}
+  viem@2.41.2:
+    resolution: {integrity: sha512-LYliajglBe1FU6+EH9mSWozp+gRA/QcHfxeD9Odf83AdH5fwUS7DroH4gHvlv6Sshqi1uXrYFA2B/EOczxd15g==}
     peerDependencies:
       typescript: '>=5.0.4'
     peerDependenciesMeta:
@@ -1155,7 +1155,7 @@ snapshots:
     dependencies:
       pathe: 2.0.3
 
-  viem@2.40.0(zod@3.22.3):
+  viem@2.41.2(zod@3.22.3):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
