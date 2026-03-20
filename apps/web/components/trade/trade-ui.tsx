@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useTradeStore } from "@/store/trade-store";
 import { TokenSelectorDialog } from "./token-selector-dialog";
@@ -137,6 +137,13 @@ export function SwapInterface() {
 		return "Trade";
 	};
 
+	const handleTradeSuccess = useMemo(() => {
+		return () => {
+			setAmount0("");
+			setAmount1("");
+		};
+	}, [setAmount0, setAmount1]);
+
 	return (
 		<>
 			<div className="w-full max-w-md mx-auto my-auto py-12 flex-shrink-0">
@@ -171,7 +178,7 @@ export function SwapInterface() {
 									</button>
 								</div>
 							</div>
-
+ 
 							<div className="mt-4 flex flex-col justify-end space-y-1">
 								<input
 									type="number"
@@ -185,7 +192,7 @@ export function SwapInterface() {
 								</div>
 							</div>
 						</div>
-
+ 
 						<div className="relative flex justify-center -my-6 z-10">
 							<button
 								onClick={swapTokens}
@@ -193,7 +200,7 @@ export function SwapInterface() {
 								<ArrowsDownUp className="h-6 w-6 font-bold group-hover:rotate-180 transition-transform duration-500" />
 							</button>
 						</div>
-
+ 
 						<div className="border-4 border-foreground bg-card p-4 pb-6 mt-4">
 							<div className="flex items-center justify-between">
 								<TokenSelectorDialog
@@ -226,7 +233,7 @@ export function SwapInterface() {
 									</div>
 								</div>
 							</div>
-
+ 
 							{amount0 && amount1 && conversionRate > 0 && (
 								<div className="mt-6 bg-muted border-t-4 border-foreground p-4 -mx-4 -mb-6 space-y-2 text-sm">
 									<div className="flex justify-between items-center">
@@ -244,17 +251,14 @@ export function SwapInterface() {
 								</div>
 							)}
 						</div>
-
+ 
 						<TradeTransactionDialog
 							token0Symbol={token0.symbol}
 							token1Symbol={token1.symbol}
 							amount0={amount0}
 							amount1={amount1}
 							isBuyingStock={isBuyingStock}
-							onSuccess={() => {
-								setAmount0("");
-								setAmount1("");
-							}}>
+							onSuccess={handleTradeSuccess}>
 							<Button
 								disabled={!isConnected || !isValidTrade || !amount0 || !amount1}
 								className="w-full mt-8 bg-primary text-primary-foreground border-4 border-foreground shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 disabled:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,0.5)] text-xl font-black uppercase tracking-widest py-8 rounded-none dark:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"

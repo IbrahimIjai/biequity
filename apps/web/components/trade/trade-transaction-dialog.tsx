@@ -102,7 +102,7 @@ export function TradeTransactionDialog({
   }, [approvalHash, isApprovalLoading, approvalError])
 
   useEffect(() => {
-    if (tradeHash && !isTradeLoading && !tradeError) {
+    if (tradeHash && !isTradeLoading && !tradeError && currentStep === "trade") {
       if (isBuyingStock) {
         // For buys: show "settling" step — the Cloudflare Worker needs to purchase
         // real shares and call settleTokens() on-chain. This typically takes 30–60s.
@@ -127,7 +127,14 @@ export function TradeTransactionDialog({
         onSuccess?.()
       }
     }
-  }, [tradeHash, isTradeLoading, tradeError, isBuyingStock, onSuccess])
+  }, [
+    tradeHash,
+    isTradeLoading,
+    tradeError,
+    isBuyingStock,
+    onSuccess,
+    currentStep,
+  ])
 
   useEffect(() => {
     if (approvalError) {

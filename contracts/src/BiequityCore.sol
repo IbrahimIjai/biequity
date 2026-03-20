@@ -12,7 +12,7 @@ import {PythStructs} from "@pyth-network/PythStructs.sol";
 import {BiequityToken} from "./BiequityToken.sol";
 import {BiequityTokenFactory} from "./BiequityTokenFactory.sol";
 import {IdentityRegistry} from "./IdentityRegistry.sol";
-import {IIdentityRegistry} from "./IIdentityRegistry.sol";
+import {IIdentityRegistry} from "./interfaces/IIdentityRegistry.sol";
 
 contract BiequityCore is Ownable {
   using SafeERC20 for IERC20;
@@ -317,10 +317,12 @@ contract BiequityCore is Ownable {
     uint256 base = uint256(int256(price.price));
 
     if (expo < 0) {
-      uint256 denom = 10 ** uint256(uint32(-expo));
+      uint256 expoAbs = uint256(int256(-expo));
+      uint256 denom = 10 ** expoAbs;
       return (base * (10 ** usdcDecimals)) / denom;
     } else if (expo > 0) {
-      uint256 mul = 10 ** uint256(uint32(expo));
+      uint256 expoUnsigned = uint256(int256(expo));
+      uint256 mul = 10 ** expoUnsigned;
       return base * (10 ** usdcDecimals) * mul;
     } else {
       return base * (10 ** usdcDecimals);

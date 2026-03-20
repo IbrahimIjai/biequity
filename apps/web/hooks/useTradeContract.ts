@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits } from "viem";
 import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
 import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core";
-import { toast } from "sonner";
 
 export interface TradeParams {
 	symbol: string;
@@ -42,45 +41,47 @@ export function useTradeContract(): UseTradeContractResult {
 	const isLoading = isWritePending || isConfirmationPending || isConfirming;
 	const error = (writeError || confirmationError || null) as Error | null;
 
-	const buyStock = async ({ symbol, amount, decimals = 6 }: TradeParams) => {
-		try {
-			setIsConfirming(true);
-			const usdcAmount = parseUnits(amount, decimals);
+	const buyStock = useCallback(
+		async ({ symbol, amount, decimals = 6 }: TradeParams) => {
+			try {
+				setIsConfirming(true);
+				const usdcAmount = parseUnits(amount, decimals);
 
-			await writeContract({
-				address: BIEQUITY_CORE_CONTRACT_ADDRESS,
-				abi: BIEQUITY_CORE_ABI,
-				functionName: "buy",
-				args: [symbol, usdcAmount],
-			});
-		} catch (error: any) {
-			console.error("Buy transaction failed:", error);
-			setIsConfirming(false);
-			throw error;
-		}
-	};
+				await writeContract({
+					address: BIEQUITY_CORE_CONTRACT_ADDRESS,
+					abi: BIEQUITY_CORE_ABI,
+					functionName: "buy",
+					args: [symbol, usdcAmount],
+				});
+			} catch (error: any) {
+				console.error("Buy transaction failed:", error);
+				setIsConfirming(false);
+				throw error;
+			}
+		},
+		[writeContract],
+	);
 
-	const redeemStock = async ({
-		symbol,
-		amount,
-		decimals = 18,
-	}: TradeParams) => {
-		try {
-			setIsConfirming(true);
-			const tokenAmount = parseUnits(amount, decimals);
+	const redeemStock = useCallback(
+		async ({ symbol, amount, decimals = 18 }: TradeParams) => {
+			try {
+				setIsConfirming(true);
+				const tokenAmount = parseUnits(amount, decimals);
 
-			await writeContract({
-				address: BIEQUITY_CORE_CONTRACT_ADDRESS,
-				abi: BIEQUITY_CORE_ABI,
-				functionName: "redeem" as any,
-				args: [symbol, tokenAmount],
-			});
-		} catch (error: any) {
-			console.error("Redeem transaction failed:", error);
-			setIsConfirming(false);
-			throw error;
-		}
-	};
+				await writeContract({
+					address: BIEQUITY_CORE_CONTRACT_ADDRESS,
+					abi: BIEQUITY_CORE_ABI,
+					functionName: "redeem" as any,
+					args: [symbol, tokenAmount],
+				});
+			} catch (error: any) {
+				console.error("Redeem transaction failed:", error);
+				setIsConfirming(false);
+				throw error;
+			}
+		},
+		[writeContract],
+	);
 
 	useEffect(() => {
 		if (isConfirmed && hash) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
 	useWriteContract,
 	useWaitForTransactionReceipt,
@@ -6,7 +6,6 @@ import {
 } from "wagmi";
 import { parseUnits, maxUint256 } from "viem";
 import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
-import { toast } from "sonner";
 
 const ERC20_ABI = [
 	{
@@ -79,30 +78,40 @@ export function useUSDCApproval(
 	const isLoading = isWritePending || isConfirmationPending || isApproving;
 	const error = (writeError || confirmationError || null) as Error | null;
 
-	const needsApproval = (amount: string, decimals: number = 6) => {
-		if (!allowance) return true;
-		const requiredAmount = parseUnits(amount, decimals);
-		return allowance < requiredAmount;
-	};
+	const needsApproval = useCallback(
+		(amount: string, decimals: number = 6) => {
+			if (!allowance) return true;
+			try {
+				const requiredAmount = parseUnits(amount, decimals);
+				return (allowance as bigint) < requiredAmount;
+			} catch (e) {
+				return true;
+			}
+		},
+		[allowance],
+	);
 
-	const approveUSDC = async (amount?: string) => {
-		try {
-			setIsApproving(true);
+	const approveUSDC = useCallback(
+		async (amount?: string) => {
+			try {
+				setIsApproving(true);
 
-			const approvalAmount = amount ? parseUnits(amount, 6) : maxUint256;
+				const approvalAmount = amount ? parseUnits(amount, 6) : maxUint256;
 
-			await writeContract({
-				address: usdcAddress as `0x${string}`,
-				abi: ERC20_ABI,
-				functionName: "approve",
-				args: [BIEQUITY_CORE_CONTRACT_ADDRESS, approvalAmount],
-			});
-		} catch (error: any) {
-			console.error("Approval failed:", error);
-			setIsApproving(false);
-			throw error;
-		}
-	};
+				await writeContract({
+					address: usdcAddress as `0x${string}`,
+					abi: ERC20_ABI,
+					functionName: "approve",
+					args: [BIEQUITY_CORE_CONTRACT_ADDRESS, approvalAmount],
+				});
+			} catch (error: any) {
+				console.error("Approval failed:", error);
+				setIsApproving(false);
+				throw error;
+			}
+		},
+		[usdcAddress, writeContract],
+	);
 
 	useEffect(() => {
 		if (isConfirmed && hash) {

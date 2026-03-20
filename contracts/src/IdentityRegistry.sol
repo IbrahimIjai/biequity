@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IIdentityRegistry} from "./IIdentityRegistry.sol";
+import {IIdentityRegistry} from "./interfaces/IIdentityRegistry.sol";
 
 /// @title IdentityRegistry
 /// @notice Simplified on-chain KYC whitelist implementing IIdentityRegistry.
