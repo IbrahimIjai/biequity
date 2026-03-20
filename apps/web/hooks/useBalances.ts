@@ -7,6 +7,8 @@ import { erc20Abi, formatUnits, isAddress, type Address } from "viem";
 import { useAccount, useChainId, useConfig, usePublicClient } from "wagmi";
 import { ALL_TOKENS, type Token } from "@/lib/tokens-list";
 import { useBalancesStore } from "@/store/balances-store";
+import { BIEQUITY_CORE_ABI } from "@/config/abi/biequity_core";
+import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
 
 function toAddress(addr?: string): Address | undefined {
 	if (!addr) return undefined;
@@ -31,8 +33,9 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 	const config = useConfig();
 	const publicClient = usePublicClient();
 	const { setBalances } = useBalancesStore();
+	const coreAddress = BIEQUITY_CORE_CONTRACT_ADDRESS as Address;
 
-	const tokensWithAddress = useMemo(
+	const tokenAddressList = useMemo(
 		() => tokens.filter((t) => !!t.address && isAddress(t.address as Address)),
 		[tokens],
 	);
@@ -42,12 +45,69 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 			"balances",
 			chainId,
 			address,
-			tokensWithAddress.map((t) => t.address?.toLowerCase()),
+			tokens.map((t) => t.symbol),
+			tokenAddressList.map((t) => t.address?.toLowerCase()),
 		],
-		enabled: Boolean(address && tokensWithAddress.length > 0),
+		enabled: Boolean(address && tokens.length > 0),
 		refetchOnWindowFocus: false,
 		queryFn: async () => {
-			const contracts = tokensWithAddress.map((t) => ({
+			const tokensWithoutAddress = tokens.filter(
+				(t) => !t.address || !isAddress(t.address as Address),
+			);
+
+			let resolvedBySymbol: Record<string, Address> = {};
+
+			if (
+				tokensWithoutAddress.length > 0 &&
+				isAddress(coreAddress)
+			) {
+				const symbolLookupResults = await readContracts(config, {
+					contracts: tokensWithoutAddress.map((t) => ({
+						address: coreAddress,
+						abi: BIEQUITY_CORE_ABI,
+						functionName: "tokenBySymbol" as const,
+						args: [t.symbol],
+						chainId,
+					})),
+					allowFailure: true,
+				});
+
+				resolvedBySymbol = symbolLookupResults.reduce<Record<string, Address>>(
+					(acc, result, index) => {
+						const symbol = tokensWithoutAddress[index]?.symbol;
+						if (!symbol) return acc;
+						if (hasResult(result) && typeof result.result === "string") {
+							const candidate = result.result as Address;
+							if (
+								isAddress(candidate) &&
+								candidate.toLowerCase() !==
+									"0x0000000000000000000000000000000000000000"
+							) {
+								acc[symbol] = candidate;
+							}
+						}
+						return acc;
+					},
+					{},
+				);
+			}
+
+			const resolvedTokens = tokens
+				.map((token) => {
+					const directAddress = token.address;
+					const resolvedAddress = resolvedBySymbol[token.symbol];
+					const finalAddress = directAddress ?? resolvedAddress;
+					if (!finalAddress || !isAddress(finalAddress as Address)) {
+						return undefined;
+					}
+					return {
+						...token,
+						address: finalAddress,
+					};
+				})
+				.filter((token): token is Token & { address: Address } => !!token);
+
+			const contracts = resolvedTokens.map((t) => ({
 				address: toAddress(t.address!)!,
 				abi: erc20Abi,
 				functionName: "balanceOf" as const,
@@ -62,7 +122,7 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 
 			const now = Date.now();
 			const entries = results.map((res, i) => {
-				const token = tokensWithAddress[i]!;
+				const token = resolvedTokens[i]!;
 				let raw: bigint | undefined;
 				if (hasResult(res) && typeof res.result === "bigint") {
 					raw = res.result;
@@ -88,22 +148,23 @@ export function useBalances(tokens: readonly Token[] = ALL_TOKENS) {
 			return entries;
 		},
 	});
-useEffect(() => {
+
+	const { refetch } = query;
+
+	useEffect(() => {
 		if (query.data) setBalances(query.data);
-	}, [query.data]);
+	}, [query.data, setBalances]);
 
 	useEffect(() => {
 		if (!publicClient || !address) return;
 		const unwatch = publicClient.watchBlocks({
 			includeTransactions: false,
 			onBlock: () => {
-				query.refetch();
+				refetch();
 			},
 		});
 		return () => unwatch();
-	}, [publicClient, address, chainId, tokensWithAddress]);
+	}, [publicClient, address, chainId, tokenAddressList, refetch]);
 
-	const { data, isLoading, isError } = query;
-	console.log({ data, isLoading, isError });
 	return query;
 }

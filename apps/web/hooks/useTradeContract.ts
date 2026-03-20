@@ -13,6 +13,7 @@ export interface TradeParams {
 export interface UseTradeContractResult {
 	buyStock: (params: TradeParams) => Promise<void>;
 	redeemStock: (params: TradeParams) => Promise<void>;
+	reset: () => void;
 	isLoading: boolean;
 	isPending: boolean;
 	isConfirming: boolean;
@@ -28,6 +29,7 @@ export function useTradeContract(): UseTradeContractResult {
 		data: hash,
 		isPending: isWritePending,
 		error: writeError,
+		reset: resetWriteState,
 	} = useWriteContract();
 
 	const {
@@ -93,9 +95,15 @@ export function useTradeContract(): UseTradeContractResult {
 		}
 	}, [isConfirmed, writeError, confirmationError, hash, isConfirming]);
 
+	const reset = useCallback(() => {
+		setIsConfirming(false);
+		resetWriteState();
+	}, [resetWriteState]);
+
 	return {
 		buyStock,
 		redeemStock,
+		reset,
 		isLoading,
 		isPending: isWritePending,
 		isConfirming: isConfirmationPending,

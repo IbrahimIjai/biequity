@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useAccount } from "wagmi"
 import {
   Dialog,
@@ -55,6 +55,7 @@ export function TradeTransactionDialog({
   const {
     buyStock,
     redeemStock,
+    reset: resetTradeState,
     isLoading: isTradeLoading,
     hash: tradeHash,
     error: tradeError,
@@ -63,26 +64,31 @@ export function TradeTransactionDialog({
   const {
     approveUSDC,
     needsApproval,
+    reset: resetApprovalState,
     isLoading: isApprovalLoading,
     hash: approvalHash,
     error: approvalError,
     refetchAllowance,
   } = useUSDCApproval(USDC_ADDRESS, userAddress)
 
+  const resetDialogState = useCallback(() => {
+    setCurrentStep("approval")
+    setApprovalCompleted(false)
+    setSettlementStatusText("")
+    resetApprovalState()
+    resetTradeState()
+  }, [resetApprovalState, resetTradeState])
+
   useEffect(() => {
     if (isOpen) {
-      setCurrentStep("approval")
-      setApprovalCompleted(false)
-      setSettlementStatusText("")
+      resetDialogState()
       refetchAllowance()
     } else {
       setTimeout(() => {
-        setCurrentStep("approval")
-        setApprovalCompleted(false)
-        setSettlementStatusText("")
+        resetDialogState()
       }, 100)
     }
-  }, [isOpen, refetchAllowance])
+  }, [isOpen, refetchAllowance, resetDialogState])
 
   useEffect(() => {
     if (
@@ -267,6 +273,9 @@ export function TradeTransactionDialog({
 
   const handleOpenChange = (open: boolean) => {
     if (!open && (isApprovalLoading || isTradeLoading)) return
+    if (!open) {
+      resetDialogState()
+    }
     setIsOpen(open)
   }
 
@@ -360,7 +369,7 @@ export function TradeTransactionDialog({
             {isBuyingStock ? token1Symbol : token0Symbol}
           </h2>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => handleOpenChange(false)}
             className="rounded-sm p-2 transition-colors hover:bg-muted"
           >
             <X className="h-5 w-5 text-muted-foreground" />
@@ -470,19 +479,12 @@ export function TradeTransactionDialog({
                 Pending Settlement
               </h3>
               <p className="mb-4 font-mono text-sm leading-relaxed text-muted-foreground">
-                Your on-chain position has been minted. Real shares are being
-                purchased in the background — settlement typically completes in
-                30–60 seconds.
+                Transaction pending. Please wait 10-30 seconds for settlement.
               </p>
               <div className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-left">
-                <p className="font-mono text-xs text-amber-600 dark:text-amber-400">
-                  ℹ️ How settlement works: a Cloudflare Worker watches for
-                  TokensMinted events, executes the configured backing provider,
-                  then calls settleTokens() on-chain to confirm 1:1 backing.
-                </p>
                 {settlementStatusText ? (
                   <p className="mt-2 font-mono text-[11px] text-amber-700 dark:text-amber-300">
-                    Worker status: {settlementStatusText}
+                    Status: {settlementStatusText}
                   </p>
                 ) : null}
               </div>
@@ -497,7 +499,7 @@ export function TradeTransactionDialog({
                 </a>
               )}
               <Button
-                onClick={() => setIsOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 variant="secondary"
                 className="h-12 w-full rounded-sm font-mono font-semibold"
               >
@@ -544,7 +546,7 @@ export function TradeTransactionDialog({
                 )}
               </div>
               <Button
-                onClick={() => setIsOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 variant="secondary"
                 className="h-12 w-full rounded-sm font-mono font-semibold"
               >

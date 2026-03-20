@@ -33,6 +33,7 @@ const ERC20_ABI = [
 export interface UseUSDCApprovalResult {
 	approveUSDC: (amount?: string) => Promise<void>;
 	needsApproval: (amount: string, decimals?: number) => boolean;
+	reset: () => void;
 	allowance: bigint | undefined;
 	isLoading: boolean;
 	isPending: boolean;
@@ -65,6 +66,7 @@ export function useUSDCApproval(
 		data: hash,
 		isPending: isWritePending,
 		error: writeError,
+		reset: resetWriteState,
 	} = useWriteContract();
 
 	const {
@@ -131,9 +133,15 @@ export function useUSDCApproval(
 		refetchAllowance,
 	]);
 
+	const reset = useCallback(() => {
+		setIsApproving(false);
+		resetWriteState();
+	}, [resetWriteState]);
+
 	return {
 		approveUSDC,
 		needsApproval,
+		reset,
 		allowance,
 		isLoading,
 		isPending: isWritePending,
