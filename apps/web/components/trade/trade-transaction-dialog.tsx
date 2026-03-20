@@ -91,15 +91,22 @@ export function TradeTransactionDialog({
   }, [isOpen, refetchAllowance, resetDialogState])
 
   useEffect(() => {
+    // If buying: auto-skip approval if allowance is already enough
     if (
+      isOpen &&
       isBuyingStock &&
       !needsApproval(amount0) &&
       currentStep === "approval"
     ) {
-      setApprovalCompleted(true)
       setCurrentStep("trade")
+      setApprovalCompleted(true)
     }
-  }, [isBuyingStock, needsApproval, amount0, currentStep])
+    // If selling: auto-skip to trade step immediately
+    if (isOpen && !isBuyingStock && currentStep === "approval") {
+      setCurrentStep("trade")
+      setApprovalCompleted(true)
+    }
+  }, [isOpen, isBuyingStock, needsApproval, amount0, currentStep, resetDialogState])
 
   useEffect(() => {
     if (approvalHash && !isApprovalLoading && !approvalError) {
@@ -282,17 +289,27 @@ export function TradeTransactionDialog({
   // ─── Step tracker helpers ──────────────────────────────────────────────────
 
   const stepDone = (step: number) => {
-    if (step === 1) return approvalCompleted
-    if (step === 2)
-      return currentStep === "settling" || currentStep === "complete"
-    if (step === 3) return false // settling never "completes" in the UI (it's async)
+    if (isBuyingStock) {
+      if (step === 1) return approvalCompleted
+      if (step === 2)
+        return currentStep === "settling" || currentStep === "complete"
+      if (step === 3) return false // settling never "completes" in the UI (it's async)
+    } else { // Redemption flow
+      if (step === 1) return currentStep === "complete"
+      if (step === 2) return currentStep === "complete"
+    }
     return false
   }
 
   const stepActive = (step: number) => {
-    if (step === 1) return currentStep === "approval"
-    if (step === 2) return currentStep === "trade"
-    if (step === 3) return currentStep === "settling"
+    if (isBuyingStock) {
+      if (step === 1) return currentStep === "approval"
+      if (step === 2) return currentStep === "trade"
+      if (step === 3) return currentStep === "settling"
+    } else { // Redemption flow
+      if (step === 1) return currentStep === "trade"
+      if (step === 2) return currentStep === "complete"
+    }
     return false
   }
 
@@ -376,18 +393,14 @@ export function TradeTransactionDialog({
           </button>
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 pt-6">
           {/* Step Tracker */}
           <div className="mb-6 flex items-center justify-between">
-            {isBuyingStock && (
+            {isBuyingStock ? (
               <>
                 <StepCircle step={1} label="Approve" />
                 <Connector filled={approvalCompleted} />
-              </>
-            )}
-            <StepCircle step={2} label="Confirm" />
-            {isBuyingStock && (
-              <>
+                <StepCircle step={2} label="Confirm" />
                 <Connector filled={stepDone(2)} />
                 <StepCircle
                   step={3}
@@ -403,11 +416,17 @@ export function TradeTransactionDialog({
                   }
                 />
               </>
+            ) : (
+              <>
+                <StepCircle step={1} label="Redeem" />
+                <Connector filled={stepDone(1)} />
+                <StepCircle step={2} label="Complete" />
+              </>
             )}
           </div>
 
           {/* Trade summary */}
-          {currentStep !== "settling" && (
+          {currentStep !== "settling" && currentStep !== "complete" && (
             <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-left">
