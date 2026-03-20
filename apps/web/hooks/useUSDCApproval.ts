@@ -8,7 +8,6 @@ import { parseUnits, maxUint256 } from "viem";
 import { BIEQUITY_CORE_CONTRACT_ADDRESS } from "@/config/biequity-core-contract";
 import { toast } from "sonner";
 
-// Standard ERC20 ABI for approve and allowance
 const ERC20_ABI = [
 	{
 		type: "function",
@@ -50,7 +49,6 @@ export function useUSDCApproval(
 ): UseUSDCApprovalResult {
 	const [isApproving, setIsApproving] = useState(false);
 
-	// Check current allowance
 	const { data: allowance, refetch: refetchAllowance } = useReadContract({
 		address: usdcAddress as `0x${string}`,
 		abi: ERC20_ABI,
@@ -81,19 +79,16 @@ export function useUSDCApproval(
 	const isLoading = isWritePending || isConfirmationPending || isApproving;
 	const error = (writeError || confirmationError || null) as Error | null;
 
-	// Check if approval is needed
 	const needsApproval = (amount: string, decimals: number = 6) => {
 		if (!allowance) return true;
 		const requiredAmount = parseUnits(amount, decimals);
 		return allowance < requiredAmount;
 	};
 
-	// Approve USDC spending
 	const approveUSDC = async (amount?: string) => {
 		try {
 			setIsApproving(true);
 
-			// Use max approval for better UX (user won't need to approve again)
 			const approvalAmount = amount ? parseUnits(amount, 6) : maxUint256;
 
 			await writeContract({
@@ -105,15 +100,14 @@ export function useUSDCApproval(
 		} catch (error: any) {
 			console.error("Approval failed:", error);
 			setIsApproving(false);
-			throw error; // Re-throw for dialog to handle
+			throw error;
 		}
 	};
 
-	// Handle approval confirmation
 	useEffect(() => {
 		if (isConfirmed && hash) {
 			setIsApproving(false);
-			refetchAllowance(); // Refresh allowance after approval
+			refetchAllowance();
 		}
 
 		if ((writeError || confirmationError) && isApproving) {

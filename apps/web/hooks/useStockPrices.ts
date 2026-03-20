@@ -45,7 +45,6 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 	const coreAddressValid = isAddress(coreAddress);
 	const USDC_DECIMALS =
 		STABLECOINS.find((t) => t.symbol === "USDC")?.decimals ?? 6;
-	// Using price by feed id returns USDC base units per 1 token; no need to send amount
 
 	const query = useQuery({
 		queryKey: [
@@ -56,7 +55,7 @@ export function useStockPrices(tokens: readonly Token[] = STOCKS) {
 		],
 		enabled: coreAddressValid && entriesToQuery.length > 0,
 		refetchOnWindowFocus: false,
-		refetchInterval: 30_000, // 30 seconds
+		refetchInterval: 30_000,
 		queryFn: async () => {
 			const contracts = entriesToQuery.map(({ feedId }) => ({
 				address: coreAddress,

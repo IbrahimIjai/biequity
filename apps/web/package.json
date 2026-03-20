@@ -17,6 +17,7 @@
     "@reown/appkit-adapter-wagmi": "^1.8.19",
     "@tanstack/react-query": "^5.91.2",
     "@wagmi/core": "^3.4.0",
+    "@workspace/assets": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@swc/helpers": "^0.5.15",
     "axios": "^1.13.6",

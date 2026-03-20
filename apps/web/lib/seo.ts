@@ -67,7 +67,6 @@ export function generateSEO({
 	};
 }
 
-// Pre-configured SEO for common pages
 export const pageSEO = {
 	home: () =>
 		generateSEO({

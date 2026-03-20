@@ -19,7 +19,6 @@ import { useTradeContract } from "@/hooks/useTradeContract"
 import { useUSDCApproval } from "@/hooks/useUSDCApproval"
 import { toast } from "sonner"
 
-// USDC contract address on Base Sepolia
 const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 
 export interface TradeTransactionDialogProps {
@@ -49,7 +48,6 @@ export function TradeTransactionDialog({
   const [currentStep, setCurrentStep] = useState<TransactionStep>("approval")
   const [approvalCompleted, setApprovalCompleted] = useState(false)
 
-  // Smart contract hooks
   const {
     buyStock,
     redeemStock,
@@ -67,24 +65,19 @@ export function TradeTransactionDialog({
     refetchAllowance,
   } = useUSDCApproval(USDC_ADDRESS, userAddress)
 
-  // Reset state when dialog opens/closes
   useEffect(() => {
     if (isOpen) {
-      // Reset all states on open
       setCurrentStep("approval")
       setApprovalCompleted(false)
       refetchAllowance()
     } else {
-      // Reset dialog states on close (NO DISCONNECT)
       setTimeout(() => {
-        // Small delay to ensure states are reset
         setCurrentStep("approval")
         setApprovalCompleted(false)
       }, 100)
     }
   }, [isOpen, refetchAllowance])
 
-  // Handle step progression
   useEffect(() => {
     if (
       isBuyingStock &&
@@ -96,7 +89,6 @@ export function TradeTransactionDialog({
     }
   }, [isBuyingStock, needsApproval, amount0, currentStep])
 
-  // Handle approval completion
   useEffect(() => {
     if (approvalHash && !isApprovalLoading && !approvalError) {
       setApprovalCompleted(true)
@@ -107,7 +99,6 @@ export function TradeTransactionDialog({
     }
   }, [approvalHash, isApprovalLoading, approvalError])
 
-  // Handle trade completion
   useEffect(() => {
     if (tradeHash && !isTradeLoading && !tradeError) {
       setCurrentStep("complete")
@@ -128,7 +119,6 @@ export function TradeTransactionDialog({
     }
   }, [tradeHash, isTradeLoading, tradeError, isBuyingStock, onSuccess])
 
-  // Handle errors
   useEffect(() => {
     if (approvalError) {
       toast.error("Approval Failed", {
@@ -160,13 +150,13 @@ export function TradeTransactionDialog({
         await buyStock({
           symbol: token1Symbol,
           amount: amount0,
-          decimals: 6, // USDC decimals
+          decimals: 6,
         })
       } else {
         await redeemStock({
           symbol: token0Symbol,
           amount: amount0,
-          decimals: 18, // Stock token decimals
+          decimals: 18,
         })
       }
     } catch (error) {
@@ -174,9 +164,7 @@ export function TradeTransactionDialog({
     }
   }
 
-  // Handle dialog open/close - prevent closing during active transactions
   const handleOpenChange = (open: boolean) => {
-    // Only allow closing when transaction is complete or not in progress
     if (!open && (isApprovalLoading || isTradeLoading)) {
       return
     }
@@ -185,9 +173,10 @@ export function TradeTransactionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild className="w-full">
+        {children}
+      </DialogTrigger>
       <DialogContent className="overflow-hidden rounded-lg border border-border bg-card p-0 shadow-2xl sm:max-w-[420px]">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-6 pb-4">
           <h2 className="font-mono text-xl font-semibold text-foreground">
             {isBuyingStock ? "Buy" : "Redeem"}{" "}
@@ -201,12 +190,10 @@ export function TradeTransactionDialog({
           </button>
         </div>
 
-        {/* Progress Steps */}
         <div className="px-6 pb-6">
           <div className="mb-6 flex items-center justify-between">
             {isBuyingStock && (
               <>
-                {/* Approval Step */}
                 <div
                   className={`flex items-center gap-2 ${
                     currentStep === "approval"
@@ -244,7 +231,6 @@ export function TradeTransactionDialog({
                   <span className="font-mono text-sm font-medium">Approve</span>
                 </div>
 
-                {/* Progress Line */}
                 <div className="relative mx-4 flex-1">
                   <div className="h-0.5 bg-muted"></div>
                   <div
@@ -256,7 +242,6 @@ export function TradeTransactionDialog({
               </>
             )}
 
-            {/* Confirm Step */}
             <div
               className={`flex items-center gap-2 ${
                 currentStep === "trade"
@@ -295,7 +280,6 @@ export function TradeTransactionDialog({
             </div>
           </div>
 
-          {/* Trade Summary */}
           {currentStep !== "complete" && (
             <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
               <div className="flex items-center justify-between">
@@ -320,7 +304,6 @@ export function TradeTransactionDialog({
             </div>
           )}
 
-          {/* Action Buttons */}
           {currentStep === "approval" &&
             isBuyingStock &&
             !approvalCompleted && (
@@ -357,7 +340,6 @@ export function TradeTransactionDialog({
             </Button>
           )}
 
-          {/* Success State */}
           {currentStep === "complete" && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-sm border border-primary/20 bg-primary/10">
@@ -371,7 +353,6 @@ export function TradeTransactionDialog({
                 completed.
               </p>
 
-              {/* Transaction Links */}
               <div className="mb-6 space-y-2">
                 {approvalHash && (
                   <a

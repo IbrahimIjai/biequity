@@ -9,7 +9,6 @@ worker.route("/", app);
 export default {
 	fetch: worker.fetch,
 
-	// Scheduled handler for Cron Triggers
 	async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
 		console.log("Cron trigger fired");
 		const web3Service = new Web3Service(env);

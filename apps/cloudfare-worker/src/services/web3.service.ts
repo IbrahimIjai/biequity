@@ -19,11 +19,10 @@ export class Web3Service {
 	}
 
 	async processBuyQueue() {
-		// In a real app, store lastProcessedBlock in KV
 		const currentBlock = await this.contractHelper[
 			"publicClient"
 		].getBlockNumber();
-		const fromBlock = currentBlock - 100n; // Look back 100 blocks
+		const fromBlock = currentBlock - 100n;
 
 		const events = await this.contractHelper.getEvents(
 			"TokensMinted",
@@ -36,24 +35,7 @@ export class Web3Service {
 			const netUsdc = "netUsdc" in event.args ? event.args.netUsdc : undefined;
 			if (!symbol || !amount) continue;
 
-			// TODO: Check if this event was already processed (idempotency)
-
 			try {
-				// 1. Withdraw USDC (Operator needs to do this, or we assume Operator has funds)
-				// For this hackathon, we might skip the actual withdrawal step if the operator wallet
-				// is already funded or if we just want to prove the Alpaca integration.
-				// But let's try to follow the flow.
-				// The contract function `withdrawUsdcFromStock` sends USDC to the caller (Operator).
-				// We need the token address for the symbol.
-				// The event gives us the symbol. We might need a helper to get token address from symbol
-				// or just trust the symbol mapping if we had it off-chain.
-				// For now, let's assume we just place the order on Alpaca to "back" the tokens.
-
-				// 2. Place Buy Order on Alpaca
-				// Convert BigInt amount to number (be careful with decimals)
-				// Assuming 18 decimals for the token and we want to buy 'amount' qty?
-				// Or is 'amount' the number of tokens?
-				// If 1 token = 1 stock share, then:
 				const qty = Number(amount) / 1e18;
 
 				logger.info(`Processing Buy: ${qty} ${symbol}`, {
@@ -63,13 +45,12 @@ export class Web3Service {
 					...(netUsdc && { netUsdc: netUsdc.toString() }),
 				});
 
-				// Place market order with proper error handling
 				const order = await this.alpacaService.placeMarketOrder(
 					symbol,
 					qty.toString(),
 					"buy",
-					"day", // time_in_force
-					false, // extended_hours
+					"day",
+					false,
 				);
 
 				logger.info(`Buy order placed successfully`, {
@@ -79,10 +60,6 @@ export class Web3Service {
 					status: order.status,
 				});
 
-				// 3. Settle Tokens on Chain
-				// Once order is filled (or immediately if we trust it will fill), we mark tokens as backed.
-				// In a real system, we'd wait for order fill confirmation (webhook).
-				// Here, we'll optimistically settle.
 				const tx = await this.contractHelper.settleTokens(symbol, amount);
 
 				logger.info(`Tokens settled on chain`, {
@@ -168,13 +145,12 @@ export class Web3Service {
 					amount: amount.toString(),
 				});
 
-				// 1. Place Sell Order on Alpaca using market order
 				const order = await this.alpacaService.placeMarketOrder(
 					symbol,
 					qty.toString(),
 					"sell",
-					"day", // time_in_force
-					false, // extended_hours
+					"day",
+					false,
 				);
 
 				logger.info(`Sell order placed successfully`, {
@@ -183,9 +159,6 @@ export class Web3Service {
 					qty: order.qty,
 					status: order.status,
 				});
-
-				// 2. Withdraw USD and bridge back to USDC (Manual/Complex step)
-				// For this demo, we just place the sell order to unback the tokens.
 
 				results.push({
 					success: true,

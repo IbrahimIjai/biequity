@@ -40,7 +40,6 @@ export function TokenSelectorDialog({
 	const { getBalance } = useBalancesStore();
 	const { getPrice } = usePricesStore();
 
-	// Fetch prices for tokens that have a Pyth feed id
 	const tokensWithFeedId = useMemo(
 		() => tokens.filter((t) => typeof t.feedId === "string"),
 		[tokens],

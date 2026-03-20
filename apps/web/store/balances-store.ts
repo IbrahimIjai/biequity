@@ -37,7 +37,6 @@ export const useBalancesStore = create<BalancesState>((set, get) => ({
 		const id = identifier.toLowerCase();
 		const byAddress = get().balancesByAddress[id];
 		if (byAddress) return byAddress;
-		// fallback: search by symbol
 		const all = Object.values(get().balancesByAddress);
 		return all.find((b) => b.token.symbol.toLowerCase() === id);
 	},

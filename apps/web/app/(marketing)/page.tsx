@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { Button } from "@workspace/ui/components/button"
 import {
   ArrowRight,
@@ -30,7 +29,7 @@ function AssetEngineAnimation() {
 
   return (
     <div className="relative mx-auto max-w-4xl p-4 sm:p-8">
-      {/* Background brutalist accents */}
+      
       <div className="absolute -left-4 -top-4h-full w-full bg-primary/20 border-4 border-foreground hidden sm:block"></div>
       
       <div className="relative border-4 border-foreground bg-card shadow-[0.5rem_0.5rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.5rem_0.5rem_0rem_0rem_rgba(255,255,255,1)] p-6 sm:p-10">
@@ -47,7 +46,7 @@ function AssetEngineAnimation() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           
-          {/* Step 0: User Deposit */}
+          
           <div className={`relative border-4 border-foreground p-6 transition-all duration-300 ${step >= 0 ? "bg-background shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] opacity-100" : "opacity-30"}`}>
             <div className="mb-4 flex h-12 w-12 items-center justify-center border-4 border-foreground bg-primary">
               <Coins className="h-6 w-6 text-primary-foreground" />
@@ -61,12 +60,12 @@ function AssetEngineAnimation() {
             )}
           </div>
 
-          {/* Connect 0 -> 1 */}
+          
           <div className="hidden items-center justify-center md:flex">
             <ArrowsLeftRight className={`h-8 w-8 transition-colors duration-300 ${step >= 1 ? "text-primary animate-pulse" : "text-muted"}`} />
           </div>
 
-          {/* Step 1: Partner Bank */}
+          
           <div className={`relative border-4 border-foreground p-6 transition-all duration-300 ${step >= 1 ? "bg-background shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] opacity-100 scale-105" : "bg-card opacity-50"}`}>
             <div className="mb-4 flex h-12 w-12 items-center justify-center border-4 border-foreground bg-foreground">
               <Bank className="h-6 w-6 text-background" />
@@ -85,12 +84,12 @@ function AssetEngineAnimation() {
             )}
           </div>
 
-          {/* Connect 1 -> 2 */}
+          
           <div className="hidden items-center justify-center md:flex">
              <ArrowsLeftRight className={`h-8 w-8 transition-colors duration-300 ${step >= 2 ? "text-primary animate-pulse" : "text-muted"}`} />
           </div>
 
-          {/* Step 2: Mint Generation */}
+          
           <div className={`relative border-4 border-foreground p-6 transition-all duration-300 ${step >= 2 ? "bg-primary shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] opacity-100" : "bg-card opacity-50"}`}>
             <div className="mb-4 flex h-12 w-12 items-center justify-center border-4 border-foreground bg-background">
               <Sparkle className="h-6 w-6 text-foreground" />
@@ -106,7 +105,7 @@ function AssetEngineAnimation() {
 
         </div>
 
-        {/* Floating Brutalist Accents */}
+        
         <div className="absolute -right-6 top-10 hidden h-10 w-10 animate-float border-4 border-foreground bg-primary md:block" style={{ animationDelay: "1s" }}></div>
         <div className="absolute -left-8 bottom-10 hidden h-8 w-8 animate-float border-4 border-foreground bg-foreground md:block" style={{ animationDelay: "2s" }}></div>
       </div>
@@ -156,9 +155,9 @@ export default function Home() {
     <main className="flex min-h-dvh flex-col overflow-x-hidden bg-background">
       <Navbar />
 
-      {/* Hero Section */}
+      
       <section className="relative flex flex-col items-center justify-center px-4 pt-20 pb-16 sm:pt-32 sm:pb-24">
-        {/* Abstract Background Shapes */}
+        
         <div className="absolute left-[10%] top-[20%] hidden h-24 w-24 animate-float border-4 border-foreground bg-card md:block" style={{ animationDelay: "0s" }}></div>
         <div className="absolute right-[15%] top-[15%] hidden h-16 w-16 animate-float border-4 border-foreground bg-primary md:block" style={{ animationDelay: "1.5s" }}></div>
         
@@ -198,7 +197,7 @@ export default function Home() {
 
       <MarqueeBanner />
 
-      {/* Institutional Core / Asset Engine */}
+      
       <section className="bg-muted py-24 sm:py-32">
         <div className="container mx-auto px-4">
           <div className="mb-16 text-center">
@@ -210,7 +209,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
+      
       <section className="py-24 sm:py-32">
         <div className="container mx-auto px-4">
           <div className="mb-16 text-center">
@@ -242,7 +241,7 @@ export default function Home() {
                 key={i} 
                 className={`group relative border-4 border-foreground p-8 shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,1)] transition-all duration-300 hover:-translate-y-2 hover:rotate-1 hover:shadow-[0.6rem_0.6rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-[0.6rem_0.6rem_0rem_0rem_rgba(255,255,255,1)] ${feature.bg}`}
               >
-                {/* Watermark Number */}
+                
                 <div className="absolute right-4 top-4 text-6xl font-black text-foreground/5 opacity-50 transition-opacity group-hover:opacity-100">
                   0{i + 1}
                 </div>
@@ -263,7 +262,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer className="mt-auto border-t-4 border-foreground bg-foreground pt-12 pb-8 text-background">
         <div className="container mx-auto px-4 text-center sm:text-left">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
@@ -292,3 +291,4 @@ export default function Home() {
     </main>
   )
 }
+

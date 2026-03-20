@@ -6,9 +6,6 @@ import axios, {
 import { ALPACA_V2_API_URL } from "./api-config";
 import { logger } from "./logger";
 
-/**
- * Custom error class for Alpaca API errors
- */
 export class AlpacaAPIError extends Error {
 	constructor(
 		public statusCode: number,
@@ -21,23 +18,19 @@ export class AlpacaAPIError extends Error {
 	}
 }
 
-/**
- * Create and configure an Axios instance for Alpaca API
- */
 export function createAlpacaAxiosInstance(
 	apiKey: string,
 	secretKey: string,
 ): AxiosInstance {
 	const instance = axios.create({
 		baseURL: ALPACA_V2_API_URL,
-		timeout: 30000, // 30 seconds
+		timeout: 30000,
 		headers: {
 			accept: "application/json",
 			"content-type": "application/json",
 		},
 	});
 
-	// Request interceptor - Add authentication headers
 	instance.interceptors.request.use(
 		(config: InternalAxiosRequestConfig) => {
 			config.headers["APCA-API-KEY-ID"] = apiKey;
@@ -57,7 +50,6 @@ export function createAlpacaAxiosInstance(
 		},
 	);
 
-	// Response interceptor - Handle errors consistently
 	instance.interceptors.response.use(
 		(response) => {
 			logger.info("Alpaca API Response", {
@@ -69,8 +61,6 @@ export function createAlpacaAxiosInstance(
 		},
 		(error: AxiosError) => {
 			if (error.response) {
-				// The request was made and the server responded with a status code
-				// that falls out of the range of 2xx
 				const status = error.response.status;
 				const data = error.response.data as any;
 
@@ -96,10 +86,8 @@ export function createAlpacaAxiosInstance(
 					data: error.response.data,
 				});
 
-				// Create custom error with detailed information
 				const alpacaError = new AlpacaAPIError(status, message, data, code);
 
-				// Add specific error messages for common scenarios
 				if (status === 403) {
 					alpacaError.message = `Forbidden: ${message}. This may be due to insufficient buying power or account restrictions.`;
 				} else if (status === 422) {
@@ -114,7 +102,6 @@ export function createAlpacaAxiosInstance(
 
 				return Promise.reject(alpacaError);
 			} else if (error.request) {
-				// The request was made but no response was received
 				logger.error("No response received from Alpaca API", {
 					url: error.config?.url,
 					error: error.message,
@@ -129,7 +116,6 @@ export function createAlpacaAxiosInstance(
 					),
 				);
 			} else {
-				// Something happened in setting up the request that triggered an Error
 				logger.error("Error setting up Alpaca API request", {
 					error: error.message,
 				});

@@ -3,20 +3,9 @@ import { AlpacaService } from "../services/alpaca.service";
 import { logger } from "../utils/logger";
 import type { AssetStatus, AssetClass, Exchange } from "../types/alpaca.types";
 
-/**
- * Supported stock symbols that we allow on the platform
- * This list should match the SUPPORTED_STOCK_SYMBOLS in the frontend
- */
 const SUPPORTED_STOCK_SYMBOLS = ["AAPL", "TSLA", "MSFT"] as const;
 
-/**
- * Controller for handling asset-related requests
- */
 export class AssetsController {
-	/**
-	 * Get list of supported stocks from Alpaca API
-	 * Filters assets to only return stocks that are in SUPPORTED_STOCK_SYMBOLS
-	 */
 	static async getSupportedStocks(c: Context) {
 		try {
 			logger.info("Fetching supported stocks", {
@@ -60,9 +49,6 @@ export class AssetsController {
 		}
 	}
 
-	/**
-	 * Get all assets with optional filtering (for admin/debugging)
-	 */
 	static async getAllAssets(c: Context) {
 		try {
 			const status = c.req.query("status") as AssetStatus | undefined;

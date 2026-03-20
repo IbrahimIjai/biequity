@@ -3,11 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { SUPPORTED_STOCKS_ENDPOINT } from "@/config/api";
+import { BASE_SEPOLIA_CHAIN_ID } from "@/lib/tokens-list";
 import { type Token } from "@/lib/tokens-list";
 
-/**
- * Alpaca Asset response type (from server)
- */
 interface AlpacaAsset {
 	id: string;
 	class: string;
@@ -22,17 +20,15 @@ interface AlpacaAsset {
 	fractionable: boolean;
 }
 
-/**
- * Transform Alpaca asset to our Token type
- */
 function transformAssetToToken(asset: AlpacaAsset): Token {
 	return {
+		chainId: BASE_SEPOLIA_CHAIN_ID,
 		symbol: asset.symbol,
 		name: asset.name,
 		icon: `/tokens/${asset.symbol}.png`,
-		decimals: 18, // Default for stock tokens
-		address: `0x0000000000000000000000000000000000000000${asset.symbol}`,
-		// feedId will be added separately if available from our static list
+		decimals: 18,
+		tokenClass: "stock",
+		assetClass: "us_equity",
 	};
 }
 
@@ -54,12 +50,12 @@ export function useStocksList() {
 				const tokens = response.data.map(transformAssetToToken);
 
 				return tokens;
-			} catch (error) {
-				console.error("Failed to fetch stocks list:", error);
-				throw error;
-			}
+		} catch (error) {
+			console.error("Failed to fetch stocks list:", error);
+			throw error;
+		}
 		},
-		staleTime: 1000 * 60 * 60, // 1 hour - stock list doesn't change often
+		staleTime: 1000 * 60 * 60,
 		refetchOnWindowFocus: false,
 		retry: 2,
 	});

@@ -16,7 +16,7 @@ export default function AppLayout({
 	return (
 		<main className="h-[100dvh] bg-background flex flex-col overflow-hidden">
 			<AppHeader />
-			<section className="flex-1 flex items-center justify-center px-4 overflow-y-auto">
+			<section className="flex-1 w-full overflow-y-auto px-4 flex flex-col">
 				{children}
 			</section>
 			<footer className="border-t-4 border-border py-4 flex-shrink-0">

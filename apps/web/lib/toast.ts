@@ -1,4 +1,3 @@
-// Simple toast utility using browser notifications or fallback
 export interface ToastOptions {
 	description?: string;
 	action?: {
@@ -29,7 +28,6 @@ class SimpleToast {
 		const container = this.ensureContainer();
 		const id = options?.id || Date.now();
 
-		// Remove existing toast with same ID
 		if (this.toasts.has(id)) {
 			this.remove(id);
 		}
@@ -78,7 +76,6 @@ class SimpleToast {
 		container.appendChild(toast);
 		this.toasts.set(id, toast);
 
-		// Auto remove after delay (except loading)
 		if (type !== "loading") {
 			setTimeout(() => this.remove(id), type === "error" ? 5000 : 3000);
 		}
@@ -111,10 +108,8 @@ class SimpleToast {
 	}
 }
 
-// Create global instance
 const simpleToast = new SimpleToast();
 
-// Make it available globally for button clicks
 if (typeof window !== "undefined") {
 	(window as any).simpleToast = simpleToast;
 }

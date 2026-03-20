@@ -1,23 +1,13 @@
-/**
- * Example usage of AlpacaService for account activities
- *
- * This file demonstrates how to retrieve and work with account activities
- * including trades, transfers, dividends, and other account events.
- */
 
 import { AlpacaService } from "../services/alpaca.service";
 import { AlpacaAPIError } from "../utils/axios";
 import { logger } from "../utils/logger";
 import type { AccountActivity } from "../types/alpaca.types";
 
-/**
- * Example: Get all recent account activities
- */
 export async function exampleGetAllActivities(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
-		// Get all activities (default: descending order, 100 items)
 		const activities = await alpacaService.getAccountActivities();
 
 		logger.info("All account activities", {
@@ -40,14 +30,10 @@ export async function exampleGetAllActivities(env: Env) {
 	}
 }
 
-/**
- * Example: Get only trade activities (fills)
- */
 export async function exampleGetTradeActivities(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
-		// Get only trades
 		const trades = await alpacaService.getTradeActivities({
 			page_size: 50,
 			direction: "desc",
@@ -73,14 +59,10 @@ export async function exampleGetTradeActivities(env: Env) {
 	}
 }
 
-/**
- * Example: Get non-trade activities (dividends, transfers, etc.)
- */
 export async function exampleGetNonTradeActivities(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
-		// Get dividends, transfers, fees, etc.
 		const nonTrades = await alpacaService.getNonTradeActivities({
 			page_size: 50,
 		});
@@ -104,14 +86,10 @@ export async function exampleGetNonTradeActivities(env: Env) {
 	}
 }
 
-/**
- * Example: Get activities by specific types
- */
 export async function exampleGetSpecificActivityTypes(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
-		// Get only dividends and interest
 		const dividendsAndInterest = await alpacaService.getAccountActivities({
 			activity_types: ["DIV", "INT"],
 			page_size: 100,
@@ -125,7 +103,6 @@ export async function exampleGetSpecificActivityTypes(env: Env) {
 			),
 		});
 
-		// Get only journal entries
 		const journals = await alpacaService.getAccountActivities({
 			activity_types: ["JNLC", "JNLS"],
 		});
@@ -146,9 +123,6 @@ export async function exampleGetSpecificActivityTypes(env: Env) {
 	}
 }
 
-/**
- * Example: Get activities by date range
- */
 export async function exampleGetActivitiesByDateRange(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
@@ -157,7 +131,6 @@ export async function exampleGetActivitiesByDateRange(env: Env) {
 		const thirtyDaysAgo = new Date(today);
 		thirtyDaysAgo.setDate(today.getDate() - 30);
 
-		// Get activities from last 30 days
 		const recentActivities = await alpacaService.getAccountActivities({
 			after: thirtyDaysAgo.toISOString().split("T")[0], // YYYY-MM-DD
 			direction: "desc",
@@ -171,7 +144,6 @@ export async function exampleGetActivitiesByDateRange(env: Env) {
 			},
 		});
 
-		// Get activities for a specific date
 		const todayActivities = await alpacaService.getAccountActivities({
 			date: today.toISOString().split("T")[0],
 		});
@@ -192,9 +164,6 @@ export async function exampleGetActivitiesByDateRange(env: Env) {
 	}
 }
 
-/**
- * Example: Paginate through all activities
- */
 export async function examplePaginateActivities(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
@@ -221,7 +190,6 @@ export async function examplePaginateActivities(env: Env) {
 				hasMore: !!nextPageToken,
 			});
 
-			// Safety limit - don't fetch more than 10 pages in this example
 			if (pageCount >= 10) break;
 		} while (pageToken);
 
@@ -239,24 +207,18 @@ export async function examplePaginateActivities(env: Env) {
 	}
 }
 
-/**
- * Example: Calculate total dividends received
- */
 export async function exampleCalculateDividends(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
-		// Get all dividend activities
 		const dividends = await alpacaService.getAccountActivities({
 			activity_types: ["DIV", "DIVFEE", "DIVFT", "DIVNRA", "DIVROC", "DIVTXEX"],
 		});
 
-		// Calculate totals
 		const totalDividends = dividends.reduce((sum, div) => {
 			return sum + parseFloat(div.net_amount);
 		}, 0);
 
-		// Group by symbol if available
 		const bySymbol: Record<string, number> = {};
 		dividends.forEach((div) => {
 			const symbol = (div as any).symbol || "UNKNOWN";
@@ -283,9 +245,6 @@ export async function exampleCalculateDividends(env: Env) {
 	}
 }
 
-/**
- * Example: Get recent activity summary
- */
 export async function exampleGetActivitySummary(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
@@ -294,7 +253,6 @@ export async function exampleGetActivitySummary(env: Env) {
 			page_size: 100,
 		});
 
-		// Group by activity type
 		const typeCount: Record<string, number> = {};
 		const typeAmount: Record<string, number> = {};
 
@@ -305,7 +263,6 @@ export async function exampleGetActivitySummary(env: Env) {
 				(typeAmount[type] || 0) + parseFloat(activity.net_amount);
 		});
 
-		// Calculate totals
 		const totalNetAmount = activities.reduce(
 			(sum, a) => sum + parseFloat(a.net_amount),
 			0,
@@ -335,16 +292,12 @@ export async function exampleGetActivitySummary(env: Env) {
 	}
 }
 
-/**
- * Example: Monitor recent activities (polling)
- */
 export async function exampleMonitorRecentActivities(env: Env) {
 	const alpacaService = new AlpacaService(env);
 
 	try {
 		let lastActivityId: string | null = null;
 
-		// Get initial activities
 		const initialActivities = await alpacaService.getAccountActivities({
 			page_size: 10,
 			direction: "desc",
@@ -359,17 +312,13 @@ export async function exampleMonitorRecentActivities(env: Env) {
 			lastId: lastActivityId,
 		});
 
-		// In a real application, you would poll periodically
-		// For this example, we'll just simulate one check
 		await new Promise((resolve) => setTimeout(resolve, 5000));
 
-		// Check for new activities
 		const newActivities = await alpacaService.getAccountActivities({
 			page_size: 100,
 			direction: "desc",
 		});
 
-		// Filter for activities newer than last seen
 		const recentActivities = lastActivityId
 			? newActivities.filter((a) => a.id > lastActivityId!)
 			: newActivities;

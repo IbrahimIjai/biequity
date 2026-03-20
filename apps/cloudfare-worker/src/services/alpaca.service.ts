@@ -16,9 +16,6 @@ import type {
 	GetActivitiesParams,
 } from "../types/alpaca.types";
 
-/**
- * Service class for interacting with Alpaca Trading API
- */
 export class AlpacaService {
 	private axiosInstance: AxiosInstance;
 
@@ -29,10 +26,6 @@ export class AlpacaService {
 		);
 	}
 
-	/**
-	 * Get account information including balance, buying power, and account status
-	 * @returns Complete account information from Alpaca API
-	 */
 	async getAccount(): Promise<AlpacaAccount> {
 		try {
 			logger.info("Fetching account information");
@@ -61,7 +54,6 @@ export class AlpacaService {
 					data: error.data,
 				});
 
-				// Provide more context for common errors
 				if (error.statusCode === 401 || error.statusCode === 403) {
 					throw new AlpacaAPIError(
 						error.statusCode,
@@ -80,10 +72,6 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Check if account is ready for trading
-	 * @returns Object indicating if account can trade and any blocking reasons
-	 */
 	async checkTradingEligibility(): Promise<{
 		canTrade: boolean;
 		reasons: string[];
@@ -124,14 +112,6 @@ export class AlpacaService {
 		};
 	}
 
-	/**
-	 * Place a market order
-	 * @param symbol - Stock symbol (e.g., 'AAPL')
-	 * @param qty - Quantity of shares to trade
-	 * @param side - 'buy' or 'sell'
-	 * @param timeInForce - Time in force (default: 'day')
-	 * @param extendedHours - Enable extended hours trading (default: false)
-	 */
 	async placeMarketOrder(
 		symbol: string,
 		qty: string,
@@ -140,7 +120,6 @@ export class AlpacaService {
 		extendedHours: boolean = false,
 	): Promise<OrderResponse> {
 		try {
-			// Validate inputs
 			if (!symbol || symbol.trim() === "") {
 				throw new AlpacaAPIError(
 					400,
@@ -206,7 +185,6 @@ export class AlpacaService {
 					data: error.data,
 				});
 
-				// Re-throw with additional context
 				throw new AlpacaAPIError(
 					error.statusCode,
 					`Failed to place ${side} order for ${qty} shares of ${symbol}: ${error.message}`,
@@ -215,7 +193,6 @@ export class AlpacaService {
 				);
 			}
 
-			// Handle unexpected errors
 			logger.error("Unexpected error placing market order", {
 				symbol,
 				qty,
@@ -234,11 +211,6 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get position for a specific symbol
-	 * @param symbol - Stock symbol
-	 * @returns Position data or null if no position exists
-	 */
 	async getPosition(symbol: string): Promise<AlpacaPosition | null> {
 		try {
 			const response = await this.axiosInstance.get<AlpacaPosition>(
@@ -247,7 +219,6 @@ export class AlpacaService {
 			return response.data;
 		} catch (error) {
 			if (error instanceof AlpacaAPIError && error.statusCode === 404) {
-				// No position exists for this symbol
 				logger.info("No position found", { symbol });
 				return null;
 			}
@@ -261,9 +232,6 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get all positions
-	 */
 	async getAllPositions(): Promise<AlpacaPosition[]> {
 		try {
 			const response = await this.axiosInstance.get<AlpacaPosition[]>(
@@ -278,31 +246,22 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get assets list with optional filtering
-	 * @param params - Optional query parameters to filter assets
-	 * @returns Array of assets matching the filter criteria
-	 */
 	async getAssets(params?: GetAssetsParams): Promise<AlpacaAsset[]> {
 		try {
 			const queryParams: Record<string, string> = {};
 
-			// Add status filter (default: active)
 			if (params?.status) {
 				queryParams.status = params.status;
 			}
 
-			// Add asset_class filter (default: us_equity)
 			if (params?.asset_class) {
 				queryParams.asset_class = params.asset_class;
 			}
 
-			// Add exchange filter
 			if (params?.exchange) {
 				queryParams.exchange = params.exchange;
 			}
 
-			// Add attributes filter (comma-separated)
 			if (params?.attributes && params.attributes.length > 0) {
 				queryParams.attributes = params.attributes.join(",");
 			}
@@ -328,28 +287,20 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get account activities with optional filtering and pagination
-	 * @param params - Optional query parameters to filter activities
-	 * @returns Array of account activities
-	 */
 	async getAccountActivities(
 		params?: GetActivitiesParams,
 	): Promise<AccountActivity[]> {
 		try {
 			const queryParams: Record<string, string> = {};
 
-			// Add activity_types filter (comma-separated)
 			if (params?.activity_types && params.activity_types.length > 0) {
 				queryParams.activity_types = params.activity_types.join(",");
 			}
 
-			// Add category filter (cannot be used with activity_types)
 			if (params?.category && !params?.activity_types) {
 				queryParams.category = params.category;
 			}
 
-			// Add date filters
 			if (params?.date) {
 				queryParams.date = params.date;
 			}
@@ -362,12 +313,10 @@ export class AlpacaService {
 				queryParams.after = params.after;
 			}
 
-			// Add direction (default: desc)
 			if (params?.direction) {
 				queryParams.direction = params.direction;
 			}
 
-			// Add pagination
 			if (params?.page_size) {
 				queryParams.page_size = params.page_size.toString();
 			}
@@ -400,10 +349,6 @@ export class AlpacaService {
 		}
 	}
 
-	/**
-	 * Get trade activities only (fills)
-	 * Convenience method to filter for trade-related activities
-	 */
 	async getTradeActivities(
 		params?: Omit<GetActivitiesParams, "category" | "activity_types">,
 	): Promise<AccountActivity[]> {
@@ -413,10 +358,6 @@ export class AlpacaService {
 		});
 	}
 
-	/**
-	 * Get non-trade activities (transfers, dividends, fees, etc.)
-	 * Convenience method to filter for non-trade activities
-	 */
 	async getNonTradeActivities(
 		params?: Omit<GetActivitiesParams, "category" | "activity_types">,
 	): Promise<AccountActivity[]> {
@@ -426,17 +367,12 @@ export class AlpacaService {
 		});
 	}
 
-	/**
-	 * Get activities with pagination support
-	 * Returns activities and the next page token if available
-	 */
 	async getActivitiesPage(params?: GetActivitiesParams): Promise<{
 		activities: AccountActivity[];
 		nextPageToken: string | null;
 	}> {
 		const activities = await this.getAccountActivities(params);
 
-		// Extract the next page token from the last activity ID
 		const nextPageToken =
 			activities.length > 0 && activities.length === (params?.page_size || 100)
 				? activities[activities.length - 1].id

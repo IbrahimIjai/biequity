@@ -7,22 +7,19 @@ import { baseSepolia } from "@reown/appkit/networks";
 import React, { type ReactNode } from "react";
 import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
 
-// Set up queryClient
 const queryClient = new QueryClient();
 
 if (!projectId) {
 	throw new Error("Project ID is not defined");
 }
 
-// Set up metadata
 const metadata = {
 	name: "biequity",
 	description: "Buy Fully Backed Stocks with Crypto",
-	url: "https://appkitexampleapp.com", // origin must match your domain & subdomain
+	url: "https://appkitexampleapp.com",
 	icons: ["https://avatars.githubusercontent.com/u/179229932"],
 };
 
-// Create the modal
 const modal = createAppKit({
 	adapters: [wagmiAdapter],
 	projectId,
@@ -30,7 +27,7 @@ const modal = createAppKit({
 	defaultNetwork: baseSepolia,
 	metadata: metadata,
 	features: {
-		analytics: true, // Optional - defaults to your Cloud configuration
+		analytics: true,
 	},
 });
 

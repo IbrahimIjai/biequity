@@ -39,11 +39,9 @@ export function useTradeContract(): UseTradeContractResult {
 		hash,
 	});
 
-	// Combined loading state
 	const isLoading = isWritePending || isConfirmationPending || isConfirming;
 	const error = (writeError || confirmationError || null) as Error | null;
 
-	// Buy stock tokens with USDC
 	const buyStock = async ({ symbol, amount, decimals = 6 }: TradeParams) => {
 		try {
 			setIsConfirming(true);
@@ -58,11 +56,10 @@ export function useTradeContract(): UseTradeContractResult {
 		} catch (error: any) {
 			console.error("Buy transaction failed:", error);
 			setIsConfirming(false);
-			throw error; // Re-throw for dialog to handle
+			throw error;
 		}
 	};
 
-	// Redeem stock tokens for USDC
 	const redeemStock = async ({
 		symbol,
 		amount,
@@ -75,17 +72,16 @@ export function useTradeContract(): UseTradeContractResult {
 			await writeContract({
 				address: BIEQUITY_CORE_CONTRACT_ADDRESS,
 				abi: BIEQUITY_CORE_ABI,
-				functionName: "redeem" as any, // Cast to any until ABI is updated
+				functionName: "redeem" as any,
 				args: [symbol, tokenAmount],
 			});
 		} catch (error: any) {
 			console.error("Redeem transaction failed:", error);
 			setIsConfirming(false);
-			throw error; // Re-throw for dialog to handle
+			throw error;
 		}
 	};
 
-	// Handle transaction confirmation
 	useEffect(() => {
 		if (isConfirmed && hash) {
 			setIsConfirming(false);

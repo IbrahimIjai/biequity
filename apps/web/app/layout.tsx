@@ -87,9 +87,6 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     manifest: "/manifest.json",
     verification: {
-      // Add your verification codes here when you get them
-      // google: "your-google-verification-code",
-      // bing: "your-bing-verification-code",
     },
     category: seoConfig.categories.primary,
     classification: seoConfig.categories.classification,
@@ -140,7 +137,6 @@ export default async function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="Biequity" />
 
-        {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -148,11 +144,9 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
 
-        {/* DNS prefetch for better performance */}
         <link rel="dns-prefetch" href="//base.org" />
         <link rel="dns-prefetch" href="//docs.base.org" />
 
-        {/* Structured Data for better search visibility */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

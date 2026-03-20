@@ -38,14 +38,12 @@ export function SwapInterface() {
 		"amount0" | "amount1"
 	>("amount0");
 
-	// Fetch dynamic stocks list from API
 	const {
 		data: dynamicStocks,
 		isLoading: isLoadingStocks,
 		error: stocksError,
 	} = useStocksList();
 
-	// Use dynamic stocks if available, fallback to static STOCKS
 	const stocksList =
 		dynamicStocks && dynamicStocks.length > 0 ? dynamicStocks : STOCKS;
 
@@ -111,7 +109,6 @@ export function SwapInterface() {
 		}
 	};
 
-	// Calculate display values and trade info
 	const price =
 		conversionRate > 0 ? formatDecimal(conversionRate, 4) : "0.0000";
 	const fee = amount0
@@ -120,7 +117,6 @@ export function SwapInterface() {
 	const token0UsdValue = amount0 ? Number.parseFloat(amount0) * token0Price : 0;
 	const token1UsdValue = amount1 ? Number.parseFloat(amount1) * token1Price : 0;
 
-	// Determine trade type and button state
 	const isBuyingStock =
 		token0.symbol === "USDC" &&
 		stocksList.some(
@@ -132,7 +128,6 @@ export function SwapInterface() {
 		) && token1.symbol === "USDC";
 	const isValidTrade = isBuyingStock || isRedeemingStock;
 
-	// Button text logic
 	const getButtonText = () => {
 		if (!isConnected) return "Connect Wallet";
 		if (!amount0 || !amount1) return "Enter Amount";
@@ -144,108 +139,105 @@ export function SwapInterface() {
 
 	return (
 		<>
-			<div className="w-full max-w-md mx-auto">
-				<Card className="border-none shadow-none bg-transparent">
-					<CardContent className="p-8 ">
-						{/* Token 0 Header */}
-						<div className="border-2 px-2 pt-2 pb-8">
+			<div className="w-full max-w-md mx-auto my-auto py-12 flex-shrink-0">
+				<Card className="border-4 border-foreground bg-background shadow-[0.5rem_0.5rem_0rem_0rem_rgba(0,0,0,1)] dark:shadow-[0.5rem_0.5rem_0rem_0rem_rgba(255,255,255,1)] rounded-none">
+					<CardContent className="p-6 sm:p-8">
+						<div className="border-4 border-foreground bg-card p-4 transition-all focus-within:ring-4 ring-primary outline-none">
 							<div className="flex items-center justify-between">
 								<TokenSelectorDialog
 									onSelect={setToken0}
 									tokens={STABLECOINS}
 									currentToken={token0}>
-									<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-										<Avatar className="size-10 border-2 border-border shadow">
+									<button className="flex items-center gap-3 bg-background border-4 border-foreground p-2 shadow-[0.15rem_0.15rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all dark:shadow-[0.15rem_0.15rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none">
+										<Avatar className="size-8 border-2 border-foreground bg-background rounded-none">
 											<AvatarImage src={token0.icon} alt={token0.name} />
-											<AvatarFallback className="text-xs font-bold">
+											<AvatarFallback className="text-xs font-black rounded-none">
 												{token0.symbol[0]}
 											</AvatarFallback>
 										</Avatar>
 										<div className="text-left">
-											<div className="font-bold text-sm">{token0.symbol}</div>
-											<div className="text-xs text-muted-foreground">
-												Balance: {token0Balance}
-											</div>
+											<div className="font-black text-sm uppercase tracking-widest">{token0.symbol}</div>
 										</div>
 									</button>
 								</TokenSelectorDialog>
-								<button
-									onClick={() => setAmount0(token0Balance || "")}
-									className="text-xs font-bold border-2 border-border px-3 py-1 shadow hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
-									Use Max
-								</button>
+								<div className="text-right">
+									<div className="text-xs font-bold text-muted-foreground mb-2">
+										Balance: <span className="text-foreground">{token0Balance}</span>
+									</div>
+									<button
+										onClick={() => setAmount0(token0Balance || "")}
+										className="text-xs font-black uppercase tracking-widest bg-primary text-primary-foreground border-4 border-foreground px-3 py-1 shadow-[0.15rem_0.15rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all dark:shadow-[0.15rem_0.15rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none">
+										Use Max
+									</button>
+								</div>
 							</div>
 
-							{/* Amount Input */}
-							<div className="text-center space-y-2">
+							<div className="mt-4 flex flex-col justify-end space-y-1">
 								<input
 									type="number"
 									value={amount0}
 									onChange={(e) => handleAmount0Change(e.target.value)}
-									placeholder="0"
-									className="w-full text-5xl font-bold text-center bg-transparent outline-none placeholder-muted-foreground"
+									placeholder="0.0"
+									className="w-full text-3xl font-black text-right bg-transparent outline-none placeholder:text-foreground/20 py-2 border-b-4 border-transparent focus:border-foreground transition-colors"
 								/>
-								<div className="text-sm text-muted-foreground">
+								<div className="text-xs font-bold text-foreground text-right opacity-80">
 									≈ ${formatDecimal(token0UsdValue, 2)}
 								</div>
 							</div>
 						</div>
 
-						{/* Divider with Swap Button */}
-						<div className="flex justify-center">
+						<div className="relative flex justify-center -my-6 z-10">
 							<button
 								onClick={swapTokens}
-								className="w-12 h-12 rounded-full border-4 border-border bg-background shadow hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center">
-								<ArrowsDownUp className="h-6 w-6 " />
+								className="w-14 h-14 rounded-none border-4 border-foreground bg-primary text-primary-foreground shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none group">
+								<ArrowsDownUp className="h-6 w-6 font-bold group-hover:rotate-180 transition-transform duration-500" />
 							</button>
 						</div>
 
-						<div className="border-2 p-2">
-							{/* Token 1 Header */}
+						<div className="border-4 border-foreground bg-card p-4 pb-6 mt-4">
 							<div className="flex items-center justify-between">
 								<TokenSelectorDialog
 									onSelect={setToken1}
 									tokens={stocksList}
 									currentToken={token1}
 									isLoading={isLoadingStocks}>
-									<button className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-										<Avatar className="size-10 border-2 border-border shadow">
+									<button className="flex items-center gap-3 bg-background border-4 border-foreground p-2 shadow-[0.15rem_0.15rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all dark:shadow-[0.15rem_0.15rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none">
+										<Avatar className="size-8 border-2 border-foreground bg-background rounded-none">
 											<AvatarImage src={token1.icon} alt={token1.name} />
-											<AvatarFallback className="text-xs font-bold">
+											<AvatarFallback className="text-xs font-black rounded-none">
 												{token1.symbol[0]}
 											</AvatarFallback>
 										</Avatar>
 										<div className="text-left">
-											<div className="font-bold text-sm">
-												Receive {token1.symbol}
-											</div>
-											<div className="text-xs text-muted-foreground">
-												Balance: {token1Balance}
+											<div className="font-black text-sm uppercase tracking-widest">
+												{token1.symbol}
 											</div>
 										</div>
 									</button>
 								</TokenSelectorDialog>
 								<div className="text-right">
-									<div className="text-2xl font-bold">
+									<div className="text-xs font-bold text-muted-foreground mb-1">
+										Balance: <span className="text-foreground">{token1Balance}</span>
+									</div>
+									<div className="text-3xl font-black text-foreground truncate max-w-[180px]">
 										{amount1
 											? formatSignificantFigures(Number.parseFloat(amount1), 5)
-											: "0"}
+											: "0.0"}
 									</div>
 								</div>
 							</div>
 
-							{/* Price & Fee Info */}
-							{amount0 && amount1 && (
-								<div className="mt-3 bg-muted border-2 border-border p-4 space-y-2 text-xs">
-									<div className="flex justify-between">
-										<span className="text-muted-foreground">Price</span>
-										<span className="font-bold">
+							{amount0 && amount1 && conversionRate > 0 && (
+								<div className="mt-6 bg-muted border-t-4 border-foreground p-4 -mx-4 -mb-6 space-y-2 text-sm">
+									<div className="flex justify-between items-center">
+										<span className="font-black uppercase tracking-widest text-foreground/70">Rate</span>
+										<span className="font-bold text-foreground">
 											1 {token0.symbol} = {price} {token1.symbol}
 										</span>
 									</div>
-									<div className="flex justify-between">
-										<span className="text-muted-foreground">Fee (3%)</span>
-										<span className="font-bold">
+									<div className="flex justify-between items-center">
+										<span className="font-black uppercase tracking-widest text-foreground/70">Fee (3%)</span>
+										<span className="font-bold text-foreground">
 											{fee} {token0.symbol}
 										</span>
 									</div>
@@ -253,7 +245,6 @@ export function SwapInterface() {
 							)}
 						</div>
 
-						{/* Trade Button */}
 						<TradeTransactionDialog
 							token0Symbol={token0.symbol}
 							token1Symbol={token1.symbol}
@@ -261,39 +252,36 @@ export function SwapInterface() {
 							amount1={amount1}
 							isBuyingStock={isBuyingStock}
 							onSuccess={() => {
-								// Reset amounts on success
 								setAmount0("");
 								setAmount1("");
 							}}>
 							<Button
 								disabled={!isConnected || !isValidTrade || !amount0 || !amount1}
-								className="w-full mt-5 shadow hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 text-base font-bold py-6"
+								className="w-full mt-8 bg-primary text-primary-foreground border-4 border-foreground shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 disabled:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,0.5)] text-xl font-black uppercase tracking-widest py-8 rounded-none dark:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"
 								size="lg">
 								{getButtonText()}
 							</Button>
 						</TradeTransactionDialog>
 
-						{/* Connection Status */}
 						{!isConnected && (
-							<div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-200 text-xs text-yellow-800">
-								<div className="flex items-center gap-2">
-									<WarningCircle className="h-4 w-4" weight="fill" />
-									<span>
-										Connect your wallet to start trading tokenized stocks
+							<div className="mt-6 p-4 bg-muted border-4 border-foreground shadow-[0.15rem_0.15rem_0rem_0rem_rgba(0,0,0,1)] text-sm font-bold dark:shadow-[0.15rem_0.15rem_0rem_0rem_rgba(255,255,255,1)]">
+								<div className="flex items-center gap-3">
+									<WarningCircle className="h-6 w-6 text-primary animate-pulse" weight="fill" />
+									<span className="uppercase tracking-widest leading-relaxed">
+										Connect your wallet to start trading
 									</span>
 								</div>
 							</div>
 						)}
 
-						{/* Trade Information */}
-						{isConnected && isValidTrade && amount0 && (
-							<div className="mt-3 p-3 bg-blue-50 border-2 border-blue-200 text-xs text-blue-800">
-								<div className="flex items-center gap-2">
-									<Info className="h-4 w-4" weight="fill" />
-									<span>
+						{isConnected && isValidTrade && !!amount0 && (
+							<div className="mt-6 p-4 bg-primary/10 border-4 border-foreground shadow-[0.15rem_0.15rem_0rem_0rem_rgba(0,0,0,1)] text-sm font-bold dark:shadow-[0.15rem_0.15rem_0rem_0rem_rgba(255,255,255,1)]">
+								<div className="flex items-center gap-3">
+									<Info className="h-6 w-6 text-primary" weight="fill" />
+									<span className="uppercase tracking-widest leading-relaxed">
 										{isBuyingStock
-											? `Buying ${amount1} ${token1.symbol} tokens with ${amount0} USDC`
-											: `Redeeming ${amount0} ${token0.symbol} tokens for ${amount1} USDC`}
+											? `Buying ${formatDecimal(Number(amount1), 4)} ${token1.symbol} with ${formatDecimal(Number(amount0), 2)} USDC`
+											: `Redeeming ${formatDecimal(Number(amount0), 4)} ${token0.symbol} for ${formatDecimal(Number(amount1), 2)} USDC`}
 									</span>
 								</div>
 							</div>
@@ -301,8 +289,6 @@ export function SwapInterface() {
 					</CardContent>
 				</Card>
 			</div>
-
-			{/* Dialogs are now embedded with triggers above */}
 		</>
 	);
 }
