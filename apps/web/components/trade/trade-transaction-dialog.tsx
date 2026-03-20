@@ -14,6 +14,7 @@ import {
   X,
   ArrowRight,
   ArrowSquareOut,
+  Clock,
 } from "@phosphor-icons/react"
 import { useTradeContract } from "@/hooks/useTradeContract"
 import { useUSDCApproval } from "@/hooks/useUSDCApproval"
@@ -31,7 +32,8 @@ export interface TradeTransactionDialogProps {
   onSuccess?: () => void
 }
 
-type TransactionStep = "approval" | "trade" | "complete"
+// Added "settling" step — shows after on-chain buy completes, before worker settles
+type TransactionStep = "approval" | "trade" | "complete" | "settling"
 
 export function TradeTransactionDialog({
   children,
@@ -93,7 +95,7 @@ export function TradeTransactionDialog({
     if (approvalHash && !isApprovalLoading && !approvalError) {
       setApprovalCompleted(true)
       setCurrentStep("trade")
-      toast.success("USDC Approved Successfully!", {
+      toast.success("USDC Approved", {
         description: "You can now proceed with your trade",
       })
     }
@@ -101,21 +103,29 @@ export function TradeTransactionDialog({
 
   useEffect(() => {
     if (tradeHash && !isTradeLoading && !tradeError) {
-      setCurrentStep("complete")
-      toast.success("Transaction Successful!", {
-        description: `${
-          isBuyingStock ? "Purchase" : "Redemption"
-        } completed successfully`,
-        action: {
-          label: "View on Explorer",
-          onClick: () =>
-            window.open(
-              `https://sepolia.basescan.org/tx/${tradeHash}`,
-              "_blank"
-            ),
-        },
-      })
-      onSuccess?.()
+      if (isBuyingStock) {
+        // For buys: show "settling" step — the Cloudflare Worker needs to purchase
+        // real shares and call settleTokens() on-chain. This typically takes 30–60s.
+        setCurrentStep("settling")
+        toast.success("Transaction Confirmed", {
+          description: "Your shares are being purchased in the background.",
+        })
+        onSuccess?.()
+      } else {
+        setCurrentStep("complete")
+        toast.success("Redemption Complete", {
+          description: "USDC has been transferred to your wallet.",
+          action: {
+            label: "View on Explorer",
+            onClick: () =>
+              window.open(
+                `https://sepolia.basescan.org/tx/${tradeHash}`,
+                "_blank"
+              ),
+          },
+        })
+        onSuccess?.()
+      }
     }
   }, [tradeHash, isTradeLoading, tradeError, isBuyingStock, onSuccess])
 
@@ -134,7 +144,6 @@ export function TradeTransactionDialog({
 
   const handleApproval = async () => {
     if (!userAddress || !isConnected) return
-
     try {
       await approveUSDC(amount0)
     } catch (error) {
@@ -144,14 +153,9 @@ export function TradeTransactionDialog({
 
   const handleTrade = async () => {
     if (!userAddress || !isConnected || !amount0) return
-
     try {
       if (isBuyingStock) {
-        await buyStock({
-          symbol: token1Symbol,
-          amount: amount0,
-          decimals: 6,
-        })
+        await buyStock({ symbol: token1Symbol, amount: amount0, decimals: 6 })
       } else {
         await redeemStock({
           symbol: token0Symbol,
@@ -165,18 +169,94 @@ export function TradeTransactionDialog({
   }
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && (isApprovalLoading || isTradeLoading)) {
-      return
-    }
+    if (!open && (isApprovalLoading || isTradeLoading)) return
     setIsOpen(open)
   }
+
+  // ─── Step tracker helpers ──────────────────────────────────────────────────
+
+  const stepDone = (step: number) => {
+    if (step === 1) return approvalCompleted
+    if (step === 2)
+      return currentStep === "settling" || currentStep === "complete"
+    if (step === 3) return false // settling never "completes" in the UI (it's async)
+    return false
+  }
+
+  const stepActive = (step: number) => {
+    if (step === 1) return currentStep === "approval"
+    if (step === 2) return currentStep === "trade"
+    if (step === 3) return currentStep === "settling"
+    return false
+  }
+
+  const StepCircle = ({
+    step,
+    label,
+    icon,
+  }: {
+    step: number
+    label: string
+    icon?: React.ReactNode
+  }) => (
+    <div
+      className={`flex items-center gap-2 ${
+        stepActive(step)
+          ? "text-primary"
+          : stepDone(step)
+            ? "text-primary"
+            : "text-muted-foreground"
+      }`}
+    >
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-sm border-2 transition-all duration-300 ${
+          stepDone(step)
+            ? "border-primary bg-primary shadow-sm"
+            : stepActive(step)
+              ? "border-primary bg-primary shadow-sm"
+              : "border-muted bg-muted"
+        }`}
+      >
+        {stepDone(step) ? (
+          <CheckCircle className="h-5 w-5 text-primary-foreground" />
+        ) : stepActive(step) && (isApprovalLoading || isTradeLoading) ? (
+          <SpinnerGap className="h-4 w-4 animate-spin text-primary-foreground" />
+        ) : icon ? (
+          icon
+        ) : (
+          <span
+            className={`font-mono text-sm font-semibold ${
+              stepActive(step)
+                ? "text-primary-foreground"
+                : "text-muted-foreground"
+            }`}
+          >
+            {step}
+          </span>
+        )}
+      </div>
+      <span className="font-mono text-sm font-medium">{label}</span>
+    </div>
+  )
+
+  const Connector = ({ filled }: { filled: boolean }) => (
+    <div className="relative mx-4 flex-1">
+      <div className="h-0.5 bg-muted" />
+      <div
+        className={`absolute top-0 left-0 h-0.5 bg-primary transition-all duration-500 ${
+          filled ? "w-full" : "w-0"
+        }`}
+      />
+    </div>
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild className="w-full">
         {children}
       </DialogTrigger>
-      <DialogContent className="overflow-hidden rounded-lg border border-border bg-card p-0 shadow-2xl sm:max-w-[420px]">
+      <DialogContent className="overflow-hidden rounded-lg border border-border bg-card p-0 shadow-2xl sm:max-w-[440px]">
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-6 pb-4">
           <h2 className="font-mono text-xl font-semibold text-foreground">
             {isBuyingStock ? "Buy" : "Redeem"}{" "}
@@ -191,96 +271,37 @@ export function TradeTransactionDialog({
         </div>
 
         <div className="px-6 pb-6">
+          {/* Step Tracker */}
           <div className="mb-6 flex items-center justify-between">
             {isBuyingStock && (
               <>
-                <div
-                  className={`flex items-center gap-2 ${
-                    currentStep === "approval"
-                      ? "text-primary"
-                      : approvalCompleted
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                  }`}
-                >
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-sm border-2 transition-all duration-300 ${
-                      approvalCompleted
-                        ? "border-primary bg-primary shadow-sm"
-                        : currentStep === "approval"
-                          ? "border-primary bg-primary shadow-sm"
-                          : "border-muted bg-muted"
-                    }`}
-                  >
-                    {approvalCompleted ? (
-                      <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                    ) : currentStep === "approval" && isApprovalLoading ? (
-                      <SpinnerGap className="h-4 w-4 animate-spin text-primary-foreground" />
-                    ) : (
-                      <span
-                        className={`font-mono text-sm font-semibold ${
-                          currentStep === "approval"
-                            ? "text-primary-foreground"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        1
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-mono text-sm font-medium">Approve</span>
-                </div>
-
-                <div className="relative mx-4 flex-1">
-                  <div className="h-0.5 bg-muted"></div>
-                  <div
-                    className={`absolute top-0 left-0 h-0.5 bg-primary transition-all duration-500 ${
-                      approvalCompleted ? "w-full" : "w-0"
-                    }`}
-                  ></div>
-                </div>
+                <StepCircle step={1} label="Approve" />
+                <Connector filled={approvalCompleted} />
               </>
             )}
-
-            <div
-              className={`flex items-center gap-2 ${
-                currentStep === "trade"
-                  ? "text-primary"
-                  : currentStep === "complete"
-                    ? "text-primary"
-                    : "text-muted-foreground"
-              }`}
-            >
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-sm border-2 transition-all duration-300 ${
-                  currentStep === "complete"
-                    ? "border-primary bg-primary shadow-sm"
-                    : currentStep === "trade"
-                      ? "border-primary bg-primary shadow-sm"
-                      : "border-muted bg-muted"
-                }`}
-              >
-                {currentStep === "complete" ? (
-                  <CheckCircle className="h-5 w-5 text-primary-foreground" />
-                ) : currentStep === "trade" && isTradeLoading ? (
-                  <SpinnerGap className="h-4 w-4 animate-spin text-primary-foreground" />
-                ) : (
-                  <span
-                    className={`font-mono text-sm font-semibold ${
-                      currentStep === "trade"
-                        ? "text-primary-foreground"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {isBuyingStock ? "2" : "1"}
-                  </span>
-                )}
-              </div>
-              <span className="font-mono text-sm font-medium">Confirm</span>
-            </div>
+            <StepCircle step={2} label="Confirm" />
+            {isBuyingStock && (
+              <>
+                <Connector filled={stepDone(2)} />
+                <StepCircle
+                  step={3}
+                  label="Settle"
+                  icon={
+                    <Clock
+                      className={`h-4 w-4 ${
+                        stepActive(3)
+                          ? "animate-pulse text-amber-400"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                  }
+                />
+              </>
+            )}
           </div>
 
-          {currentStep !== "complete" && (
+          {/* Trade summary */}
+          {currentStep !== "settling" && (
             <div className="mb-6 rounded-lg border border-border bg-muted/30 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-left">
@@ -304,6 +325,7 @@ export function TradeTransactionDialog({
             </div>
           )}
 
+          {/* Approval step */}
           {currentStep === "approval" &&
             isBuyingStock &&
             !approvalCompleted && (
@@ -323,6 +345,7 @@ export function TradeTransactionDialog({
               </Button>
             )}
 
+          {/* Trade step */}
           {currentStep === "trade" && (
             <Button
               onClick={handleTrade}
@@ -340,19 +363,59 @@ export function TradeTransactionDialog({
             </Button>
           )}
 
+          {/* Settling state — shown for buy trades after on-chain confirmation */}
+          {currentStep === "settling" && (
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-sm border border-amber-500/20 bg-amber-500/10">
+                <SpinnerGap className="h-10 w-10 animate-spin text-amber-500" />
+              </div>
+              <h3 className="mb-2 font-mono text-lg font-semibold text-foreground">
+                Pending Settlement
+              </h3>
+              <p className="mb-4 font-mono text-sm leading-relaxed text-muted-foreground">
+                Your on-chain position has been minted. Real shares are being
+                purchased in the background — settlement typically completes in
+                30–60 seconds.
+              </p>
+              <div className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-left">
+                <p className="font-mono text-xs text-amber-600 dark:text-amber-400">
+                  ℹ️ How settlement works: a Cloudflare Worker watches for
+                  TokensMinted events, buys the underlying shares via Alpaca,
+                  then calls settleTokens() on-chain to confirm 1:1 backing.
+                </p>
+              </div>
+              {tradeHash && (
+                <a
+                  href={`https://sepolia.basescan.org/tx/${tradeHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-4 block font-mono text-sm text-primary transition-colors hover:text-primary/80"
+                >
+                  View Transaction <ArrowSquareOut className="inline h-4 w-4" />
+                </a>
+              )}
+              <Button
+                onClick={() => setIsOpen(false)}
+                variant="secondary"
+                className="h-12 w-full rounded-sm font-mono font-semibold"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+
+          {/* Complete state — for redeems */}
           {currentStep === "complete" && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-sm border border-primary/20 bg-primary/10">
                 <CheckCircle className="h-10 w-10 text-primary" />
               </div>
               <h3 className="mb-2 font-mono text-lg font-semibold text-foreground">
-                Transaction Successful!
+                Redemption Complete
               </h3>
               <p className="mb-6 font-mono text-sm text-muted-foreground">
-                Your {isBuyingStock ? "purchase" : "redemption"} has been
-                completed.
+                USDC has been transferred to your wallet.
               </p>
-
               <div className="mb-6 space-y-2">
                 {approvalHash && (
                   <a
@@ -376,11 +439,10 @@ export function TradeTransactionDialog({
                   </a>
                 )}
               </div>
-
               <Button
                 onClick={() => setIsOpen(false)}
-                className="h-12 w-full rounded-sm bg-secondary font-mono font-semibold text-secondary-foreground shadow-sm hover:bg-secondary/90"
                 variant="secondary"
+                className="h-12 w-full rounded-sm font-mono font-semibold"
               >
                 Close
               </Button>
