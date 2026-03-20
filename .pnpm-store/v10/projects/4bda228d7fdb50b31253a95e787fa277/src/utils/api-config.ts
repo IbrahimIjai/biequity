@@ -1,1 +1,0 @@
-export const ALPACA_V2_API_URL = "https://paper-api.alpaca.markets/v2";
