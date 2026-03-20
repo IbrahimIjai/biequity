@@ -5,7 +5,7 @@
 	"compatibility_date": "2025-11-23",
 	"vars": {
 		"ALPACA_API_KEY": "",
-		"ALPACA_SECRET_KEY": "",
+		"ALPACA_SECRET": "",
 		"OPERATOR_PRIVATE_KEY": "",
 		"RPC_URL": "",
 		"BIEQUITY_CORE_ADDRESS": ""

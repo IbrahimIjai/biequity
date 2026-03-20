@@ -1,16 +1,88 @@
 import { Context } from "hono";
 import { AlpacaService } from "../services/alpaca.service";
 import { logger } from "../utils/logger";
-import type { AssetStatus, AssetClass, Exchange } from "../types/alpaca.types";
+import type {
+	AssetStatus,
+	AssetClass,
+	Exchange,
+	AlpacaAsset,
+} from "../types/alpaca.types";
 
 const SUPPORTED_STOCK_SYMBOLS = ["AAPL", "TSLA", "MSFT"] as const;
 
+const MOCK_ASSETS: AlpacaAsset[] = [
+	{
+		id: "mock-aapl",
+		class: "us_equity",
+		exchange: "NASDAQ",
+		symbol: "AAPL",
+		name: "Apple Inc.",
+		status: "active",
+		tradable: true,
+		marginable: true,
+		maintenance_margin_requirement: 30,
+		margin_requirement_long: "30",
+		margin_requirement_short: "30",
+		shortable: true,
+		easy_to_borrow: true,
+		fractionable: true,
+		attributes: [],
+	},
+	{
+		id: "mock-tsla",
+		class: "us_equity",
+		exchange: "NASDAQ",
+		symbol: "TSLA",
+		name: "Tesla Inc.",
+		status: "active",
+		tradable: true,
+		marginable: true,
+		maintenance_margin_requirement: 30,
+		margin_requirement_long: "30",
+		margin_requirement_short: "30",
+		shortable: true,
+		easy_to_borrow: true,
+		fractionable: true,
+		attributes: [],
+	},
+	{
+		id: "mock-msft",
+		class: "us_equity",
+		exchange: "NASDAQ",
+		symbol: "MSFT",
+		name: "Microsoft Corp.",
+		status: "active",
+		tradable: true,
+		marginable: true,
+		maintenance_margin_requirement: 30,
+		margin_requirement_long: "30",
+		margin_requirement_short: "30",
+		shortable: true,
+		easy_to_borrow: true,
+		fractionable: true,
+		attributes: [],
+	},
+];
+
 export class AssetsController {
+	private static isMockMode(c: Context): boolean {
+		return String((c.env as Record<string, unknown>).MOCK_MODE) === "true";
+	}
+
 	static async getSupportedStocks(c: Context) {
 		try {
 			logger.info("Fetching supported stocks", {
 				supportedSymbols: SUPPORTED_STOCK_SYMBOLS,
 			});
+
+			if (AssetsController.isMockMode(c)) {
+				const supportedAssets = MOCK_ASSETS.filter((asset) =>
+					SUPPORTED_STOCK_SYMBOLS.includes(
+						asset.symbol as (typeof SUPPORTED_STOCK_SYMBOLS)[number],
+					),
+				);
+				return c.json(supportedAssets);
+			}
 
 			const alpacaService = new AlpacaService(c.env);
 
@@ -56,6 +128,16 @@ export class AssetsController {
 			const exchange = c.req.query("exchange") as Exchange | undefined;
 
 			logger.info("Fetching all assets", { status, assetClass, exchange });
+
+			if (AssetsController.isMockMode(c)) {
+				const assets = MOCK_ASSETS.filter((asset) => {
+					if (status && asset.status !== status) return false;
+					if (assetClass && asset.class !== assetClass) return false;
+					if (exchange && asset.exchange !== exchange) return false;
+					return true;
+				});
+				return c.json(assets);
+			}
 
 			const alpacaService = new AlpacaService(c.env);
 

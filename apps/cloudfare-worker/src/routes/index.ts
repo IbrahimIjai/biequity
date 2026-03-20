@@ -1,9 +1,20 @@
 import { Hono } from "hono"
+import { cors } from "hono/cors"
 import { WebhookController } from "../controllers/webhook.controller"
 import { AssetsController } from "../controllers/assets.controller"
 import { TokenizationController } from "../controllers/tokenization.controller"
+import { SettlementController } from "../controllers/settlement.controller"
 
 const app = new Hono<{ Bindings: Env }>()
+
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  })
+)
 
 // Health
 app.get("/", WebhookController.healthCheck)
@@ -23,5 +34,8 @@ app.get("/api/tokenization/requests/:id", TokenizationController.getRequest)
 
 // Prices
 app.get("/api/stocks/prices", TokenizationController.getPrices)
+
+// Tx-hash driven settlement endpoint with retries
+app.post("/api/settlement/execute", SettlementController.execute)
 
 export default app

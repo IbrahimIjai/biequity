@@ -19,6 +19,7 @@ import {
 import { useTradeContract } from "@/hooks/useTradeContract"
 import { useUSDCApproval } from "@/hooks/useUSDCApproval"
 import { toast } from "sonner"
+import { SETTLEMENT_EXECUTE_ENDPOINT } from "@/config/api"
 
 const USDC_ADDRESS = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 
@@ -49,6 +50,7 @@ export function TradeTransactionDialog({
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState<TransactionStep>("approval")
   const [approvalCompleted, setApprovalCompleted] = useState(false)
+  const [settlementStatusText, setSettlementStatusText] = useState<string>("")
 
   const {
     buyStock,
@@ -71,11 +73,13 @@ export function TradeTransactionDialog({
     if (isOpen) {
       setCurrentStep("approval")
       setApprovalCompleted(false)
+      setSettlementStatusText("")
       refetchAllowance()
     } else {
       setTimeout(() => {
         setCurrentStep("approval")
         setApprovalCompleted(false)
+        setSettlementStatusText("")
       }, 100)
     }
   }, [isOpen, refetchAllowance])
@@ -148,6 +152,92 @@ export function TradeTransactionDialog({
       })
     }
   }, [approvalError, tradeError])
+
+  useEffect(() => {
+    if (
+      !isBuyingStock ||
+      currentStep !== "settling" ||
+      !tradeHash
+    ) {
+      return
+    }
+
+    let cancelled = false
+
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms))
+
+    const runSettlementPolling = async () => {
+      const maxPolls = 12
+      const pollDelayMs = 5000
+
+      for (let i = 0; i < maxPolls; i++) {
+        if (cancelled) return
+
+        try {
+          const response = await fetch(SETTLEMENT_EXECUTE_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ txHash: tradeHash }),
+          })
+
+          const data = await response.json().catch(() => ({}))
+          const status = String(data?.status ?? "unknown")
+          console.log("[settlement] poll", {
+            poll: i + 1,
+            txHash: tradeHash,
+            endpoint: SETTLEMENT_EXECUTE_ENDPOINT,
+            statusCode: response.status,
+            status,
+            data,
+          })
+
+          if (cancelled) return
+          setSettlementStatusText(status)
+
+          if (
+            response.ok &&
+            (status === "settled" ||
+              status === "already_settled" ||
+              status === "settled_mock")
+          ) {
+            setCurrentStep("complete")
+            toast.success("Settlement Complete", {
+              description: "Your backed stock position is now settled on-chain.",
+            })
+            return
+          }
+
+          if (status === "order_failed") {
+            toast.error("Settlement Failed", {
+              description: "Worker reported order failure. Please retry shortly.",
+            })
+            return
+          }
+        } catch (error) {
+          console.error("[settlement] request failed", error)
+          if (cancelled) return
+          setSettlementStatusText("request_failed")
+        }
+
+        if (i < maxPolls - 1) {
+          await sleep(pollDelayMs)
+        }
+      }
+
+      if (!cancelled) {
+        toast.info("Settlement Still Pending", {
+          description: "Background settlement is still in progress. Check back shortly.",
+        })
+      }
+    }
+
+    void runSettlementPolling()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isBuyingStock, currentStep, tradeHash])
 
   const handleApproval = async () => {
     if (!userAddress || !isConnected) return
@@ -387,9 +477,14 @@ export function TradeTransactionDialog({
               <div className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-left">
                 <p className="font-mono text-xs text-amber-600 dark:text-amber-400">
                   ℹ️ How settlement works: a Cloudflare Worker watches for
-                  TokensMinted events, buys the underlying shares via Alpaca,
+                  TokensMinted events, executes the configured backing provider,
                   then calls settleTokens() on-chain to confirm 1:1 backing.
                 </p>
+                {settlementStatusText ? (
+                  <p className="mt-2 font-mono text-[11px] text-amber-700 dark:text-amber-300">
+                    Worker status: {settlementStatusText}
+                  </p>
+                ) : null}
               </div>
               {tradeHash && (
                 <a
@@ -418,10 +513,12 @@ export function TradeTransactionDialog({
                 <CheckCircle className="h-10 w-10 text-primary" />
               </div>
               <h3 className="mb-2 font-mono text-lg font-semibold text-foreground">
-                Redemption Complete
+                {isBuyingStock ? "Settlement Complete" : "Redemption Complete"}
               </h3>
               <p className="mb-6 font-mono text-sm text-muted-foreground">
-                USDC has been transferred to your wallet.
+                {isBuyingStock
+                  ? "Your stock position is now settled and backed."
+                  : "USDC has been transferred to your wallet."}
               </p>
               <div className="mb-6 space-y-2">
                 {approvalHash && (
