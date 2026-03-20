@@ -1,0 +1,33 @@
+name: Contracts CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'contracts/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'contracts/**'
+
+jobs:
+  test:
+    name: Foundry Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Formatter
+        working-directory: ./contracts
+        run: forge fmt --check
+
+      - name: Run Tests
+        working-directory: ./contracts
+        run: forge test --gas-report -vvv
