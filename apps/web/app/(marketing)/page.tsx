@@ -14,7 +14,6 @@ import {
   ArrowsLeftRight,
   Sparkle
 } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/layout/Navbar"
 
 function AssetEngineAnimation() {
@@ -149,8 +148,6 @@ function MarqueeBanner() {
 }
 
 export default function Home() {
-  const { push } = useRouter()
-
   return (
     <main className="flex min-h-dvh flex-col overflow-x-hidden bg-background">
       <Navbar />
@@ -183,13 +180,6 @@ export default function Home() {
               className="h-16 border-4 border-foreground bg-primary px-8 text-lg font-black uppercase text-primary-foreground shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,1)] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none dark:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"
             >
               Start Issuing <ArrowRight className="ml-2 h-6 w-6" weight="bold" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-16 border-4 border-foreground bg-background px-8 text-lg font-black uppercase text-foreground shadow-[0.35rem_0.35rem_0rem_0rem_rgba(0,0,0,1)] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none dark:shadow-[0.35rem_0.35rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"
-            >
-              Read Whitepaper
             </Button>
           </div>
         </div>

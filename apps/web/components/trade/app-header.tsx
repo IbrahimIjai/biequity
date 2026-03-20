@@ -55,14 +55,10 @@ export function AppHeader() {
           
           {isConnected ? (
             <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  size="sm"
-                  className="flex items-center gap-2 border-4 border-foreground bg-card font-mono text-xs font-black shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all h-10 sm:h-12 dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"
-                  variant="outline"
-                >
-                  <span>{displayAddress}</span>
-                </Button>
+              <DialogTrigger
+                className="inline-flex h-10 items-center justify-center gap-2 border-4 border-foreground bg-card px-3 font-mono text-xs font-black shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-none sm:h-12 dark:shadow-[0.25rem_0.25rem_0rem_0rem_rgba(255,255,255,1)] dark:hover:shadow-none"
+              >
+                <span>{displayAddress}</span>
               </DialogTrigger>
               <DialogContent className="w-full max-w-sm border-4 border-foreground bg-background shadow-[0.5rem_0.5rem_0rem_0rem_rgba(0,0,0,1)] rounded-none dark:shadow-[0.5rem_0.5rem_0rem_0rem_rgba(255,255,255,1)]">
                 <DialogHeader className="border-b-4 border-foreground pb-4">
@@ -84,7 +80,7 @@ export function AppHeader() {
                   </div>
 
                   <div className="flex w-full gap-2 pt-2">
-                    <DialogClose className="w-full">
+                    <DialogClose>
                       <Button
                         variant="destructive"
                         onClick={() => disconnect()}
