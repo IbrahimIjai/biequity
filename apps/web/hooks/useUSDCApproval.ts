@@ -32,7 +32,22 @@ const ERC20_ABI = [
 	},
 ] as const;
 
-export function useUSDCApproval(usdcAddress: string, userAddress?: string) {
+export interface UseUSDCApprovalResult {
+	approveUSDC: (amount?: string) => Promise<void>;
+	needsApproval: (amount: string, decimals?: number) => boolean;
+	allowance: bigint | undefined;
+	isLoading: boolean;
+	isPending: boolean;
+	isConfirming: boolean;
+	hash?: `0x${string}`;
+	error: Error | null;
+	refetchAllowance: () => unknown;
+}
+
+export function useUSDCApproval(
+	usdcAddress: string,
+	userAddress?: string,
+): UseUSDCApprovalResult {
 	const [isApproving, setIsApproving] = useState(false);
 
 	// Check current allowance
@@ -64,6 +79,7 @@ export function useUSDCApproval(usdcAddress: string, userAddress?: string) {
 	});
 
 	const isLoading = isWritePending || isConfirmationPending || isApproving;
+	const error = (writeError || confirmationError || null) as Error | null;
 
 	// Check if approval is needed
 	const needsApproval = (amount: string, decimals: number = 6) => {
@@ -120,7 +136,7 @@ export function useUSDCApproval(usdcAddress: string, userAddress?: string) {
 		isPending: isWritePending,
 		isConfirming: isConfirmationPending,
 		hash,
-		error: writeError || confirmationError,
+		error,
 		refetchAllowance,
 	};
 }

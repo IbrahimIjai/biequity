@@ -1,21 +1,25 @@
 "use client";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog"
+import { Button } from "@workspace/ui/components/button"
 import * as React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar"
 import type { Token } from "@/lib/tokens-list";
 import { useBalancesStore } from "@/store/balances-store";
 import { usePricesStore } from "@/store/prices-store";
 import { useMemo } from "react";
 import { useStockPrices } from "@/hooks/useStockPrices";
 import { formatDecimal } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { SpinnerGap } from "@phosphor-icons/react";
 
 interface TokenSelectorDialogProps {
 	onSelect: (token: Token) => void;
@@ -85,7 +89,7 @@ export function TokenSelectorDialog({
 				<div className="mt-2 space-y-2">
 					{isLoading ? (
 						<div className="flex flex-col items-center justify-center py-8 space-y-3">
-							<Loader2 className="h-8 w-8 animate-spin text-primary" />
+							<SpinnerGap className="h-8 w-8 animate-spin text-primary" />
 							<p className="text-sm text-muted-foreground">Loading stocks...</p>
 						</div>
 					) : tokens.length === 0 ? (

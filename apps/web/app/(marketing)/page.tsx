@@ -1,36 +1,20 @@
 "use client";
 import { useEffect } from "react";
 import Link from "next/link";
-import { useMiniKit } from "@/providers/minikit-provider";
-import { Button } from "@/components/ui/button";
+import { Button } from "@workspace/ui/components/button"
 import {
 	ArrowRight,
-	Github,
+	GithubLogo,
 	Shield,
-	TrendingUp,
-	Twitter,
-	Zap,
-} from "lucide-react";
+	TrendUp,
+	TwitterLogo,
+	Lightning,
+} from "@phosphor-icons/react"
 import { useRouter } from "next/navigation";
 
 export default function Home() {
 	const { push } = useRouter();
-	// If you need to verify the user's identity, you can use the useQuickAuth hook.
-	// This hook will verify the user's signature and return the user's FID. You can update
-	// this to meet your needs. See the /app/api/auth/route.ts file for more details.
-	// Note: If you don't need to verify the user's identity, you can get their FID and other user data
-	// via `useMiniKit().context?.user`.
-	// const { data, isLoading, error } = useQuickAuth<{
-	//   userFid: string;
-	// }>("/api/auth");
 
-	const { setMiniAppReady, isMiniAppReady } = useMiniKit();
-
-	useEffect(() => {
-		if (!isMiniAppReady) {
-			setMiniAppReady();
-		}
-	}, [setMiniAppReady, isMiniAppReady]);
 
 	return (
 		<main className="min-h-[100dvh] lg:h-[100dvh] bg-background flex flex-col overflow-hidden">
@@ -102,7 +86,7 @@ export default function Home() {
 
 						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
 							<div className="w-10 h-10 bg-primary border-4 border-border flex items-center justify-center mb-2 mx-auto">
-								<Zap className="h-5 w-5 text-primary-foreground" />
+								<Lightning className="h-5 w-5 text-primary-foreground" />
 							</div>
 							<h3 className="text-lg font-bold mb-1">Mint Stocks</h3>
 							<p className="text-xs text-muted-foreground leading-relaxed">
@@ -112,7 +96,7 @@ export default function Home() {
 
 						<div className="bg-card p-4 border-4 border-border shadow-[0.25rem_0.25rem_0rem_0rem_rgba(0,0,0,1)]">
 							<div className="w-10 h-10 bg-primary border-4 border-border flex items-center justify-center mb-2 mx-auto">
-								<TrendingUp className="h-5 w-5 text-primary-foreground" />
+								<TrendUp className="h-5 w-5 text-primary-foreground" />
 							</div>
 							<h3 className="text-lg font-bold mb-1">Trade & Manage</h3>
 							<p className="text-xs text-muted-foreground leading-relaxed">
@@ -136,13 +120,13 @@ export default function Home() {
 								href="#"
 								className="hover:text-primary transition-colors"
 								aria-label="Twitter">
-								<Twitter className="h-5 w-5" />
+								<TwitterLogo className="h-5 w-5" />
 							</a>
 							<a
 								href="#"
 								className="hover:text-primary transition-colors"
 								aria-label="GitHub">
-								<Github className="h-5 w-5" />
+								<GithubLogo className="h-5 w-5" />
 							</a>
 							<a
 								href="#"

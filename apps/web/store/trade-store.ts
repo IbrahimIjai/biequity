@@ -13,12 +13,23 @@ export interface TradeState {
 	setAmount1: (amount: string) => void;
 	swapTokens: () => void;
 }
+
+const firstStable = STABLECOINS[0];
+if (!firstStable) {
+	throw new Error("STABLECOINS must contain at least one token");
+}
+
+const firstStock = STOCKS[0];
+if (!firstStock) {
+	throw new Error("STOCKS must contain at least one token");
+}
+
 const DEFAULT_STABLE: Token =
 	STABLECOINS.find((t) => t.symbol === "USDT") ??
 	STABLECOINS.find((t) => t.symbol === "USDC") ??
-	STABLECOINS[0];
+	firstStable;
 const DEFAULT_STOCK: Token =
-	STOCKS.find((t) => t.symbol === "AAPL") ?? STOCKS[0];
+	STOCKS.find((t) => t.symbol === "AAPL") ?? firstStock;
 
 export const useTradeStore = create<TradeState>((set) => ({
 	token0: DEFAULT_STABLE,

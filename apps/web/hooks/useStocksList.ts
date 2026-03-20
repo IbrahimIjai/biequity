@@ -36,11 +36,7 @@ function transformAssetToToken(asset: AlpacaAsset): Token {
 	};
 }
 
-/**
- * Hook to fetch supported stocks from our Cloudflare Worker
- * The server filters assets to only return stocks in SUPPORTED_STOCK_SYMBOLS
- * This reduces payload size and keeps filtering logic centralized
- */
+
 export function useStocksList() {
 	return useQuery({
 		queryKey: ["stocks-list", "supported"],

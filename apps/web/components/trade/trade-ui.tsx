@@ -4,11 +4,15 @@ import { useState, useEffect, useMemo } from "react";
 import { useAccount } from "wagmi";
 import { useTradeStore } from "@/store/trade-store";
 import { TokenSelectorDialog } from "./token-selector-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown } from "lucide-react";
+import { Button } from "@workspace/ui/components/button"
+import { Card, CardContent } from "@workspace/ui/components/card"
+import { ArrowsDownUp, Info, WarningCircle } from "@phosphor-icons/react";
 import { STABLECOINS, STOCKS } from "@/lib/tokens-list";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar"
 import { useBalancesStore } from "@/store/balances-store";
 import { usePricesStore } from "@/store/prices-store";
 import { useStockPrices } from "@/hooks/useStockPrices";
@@ -192,7 +196,7 @@ export function SwapInterface() {
 							<button
 								onClick={swapTokens}
 								className="w-12 h-12 rounded-full border-4 border-border bg-background shadow hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center">
-								<ChevronDown className="h-6 w-6 " />
+								<ArrowsDownUp className="h-6 w-6 " />
 							</button>
 						</div>
 
@@ -273,7 +277,7 @@ export function SwapInterface() {
 						{!isConnected && (
 							<div className="mt-3 p-3 bg-yellow-50 border-2 border-yellow-200 text-xs text-yellow-800">
 								<div className="flex items-center gap-2">
-									<span>⚠️</span>
+									<WarningCircle className="h-4 w-4" weight="fill" />
 									<span>
 										Connect your wallet to start trading tokenized stocks
 									</span>
@@ -285,7 +289,7 @@ export function SwapInterface() {
 						{isConnected && isValidTrade && amount0 && (
 							<div className="mt-3 p-3 bg-blue-50 border-2 border-blue-200 text-xs text-blue-800">
 								<div className="flex items-center gap-2">
-									<span>ℹ️</span>
+									<Info className="h-4 w-4" weight="fill" />
 									<span>
 										{isBuyingStock
 											? `Buying ${amount1} ${token1.symbol} tokens with ${amount0} USDC`

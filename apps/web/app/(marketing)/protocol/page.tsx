@@ -1,6 +1,11 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
+import { Button } from "@workspace/ui/components/button"
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@workspace/ui/components/card"
+import { ArrowLeft, TrendDown, TrendUp } from "@phosphor-icons/react";
 import { pageSEO } from "@/lib/seo";
 import Link from "next/link";
 
@@ -89,7 +94,7 @@ export default function ProtocolPage() {
 										</div>
 									</div>
 									<div className="flex items-center gap-1 text-primary">
-										<TrendingUp className="h-5 w-5" />
+										<TrendUp className="h-5 w-5" />
 										<span className="text-sm font-bold">+2.4%</span>
 									</div>
 								</div>
@@ -152,7 +157,7 @@ export default function ProtocolPage() {
 										</div>
 									</div>
 									<div className="flex items-center gap-1 text-destructive">
-										<TrendingDown className="h-5 w-5" />
+										<TrendDown className="h-5 w-5" />
 										<span className="text-sm font-bold">-0.8%</span>
 									</div>
 								</div>

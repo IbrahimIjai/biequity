@@ -11,7 +11,17 @@ export interface TradeParams {
 	decimals?: number;
 }
 
-export function useTradeContract() {
+export interface UseTradeContractResult {
+	buyStock: (params: TradeParams) => Promise<void>;
+	redeemStock: (params: TradeParams) => Promise<void>;
+	isLoading: boolean;
+	isPending: boolean;
+	isConfirming: boolean;
+	hash?: `0x${string}`;
+	error: Error | null;
+}
+
+export function useTradeContract(): UseTradeContractResult {
 	const [isConfirming, setIsConfirming] = useState(false);
 
 	const {
@@ -31,6 +41,7 @@ export function useTradeContract() {
 
 	// Combined loading state
 	const isLoading = isWritePending || isConfirmationPending || isConfirming;
+	const error = (writeError || confirmationError || null) as Error | null;
 
 	// Buy stock tokens with USDC
 	const buyStock = async ({ symbol, amount, decimals = 6 }: TradeParams) => {
@@ -92,6 +103,6 @@ export function useTradeContract() {
 		isPending: isWritePending,
 		isConfirming: isConfirmationPending,
 		hash,
-		error: writeError || confirmationError,
+		error,
 	};
 }
