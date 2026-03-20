@@ -1,0 +1,14 @@
+
+> web@0.0.1 typecheck
+> tsc --noEmit
+
+lernza_landing.tsx(15,8): error TS2307: Cannot find module 'lucide-react' or its corresponding type declarations.
+lernza_landing.tsx(16,24): error TS2307: Cannot find module '@/components/ui/button' or its corresponding type declarations.
+lernza_landing.tsx(17,42): error TS2307: Cannot find module '@/hooks/use-animations' or its corresponding type declarations.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path C:\Users\USER\Desktop\wek wek wek wek\portfolio stuufs\biequity\apps\web
+npm error workspace web@0.0.1
+npm error location C:\Users\USER\Desktop\wek wek wek wek\portfolio stuufs\biequity\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --noEmit

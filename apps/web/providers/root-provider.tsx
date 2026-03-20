@@ -17,7 +17,6 @@ export function RootProvider({
 						attribute="class"
 						defaultTheme="light"
 						enableSystem
-						forcedTheme="light"
 						disableTransitionOnChange>
 						<DataProviders>{children}</DataProviders>
 					</ThemeProvider>
