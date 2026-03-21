@@ -10,7 +10,12 @@ const app = new Hono<{ Bindings: Env }>()
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://biequity.xyz",
+      "https://www.biequity.xyz",
+    ],
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
   })
