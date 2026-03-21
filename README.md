@@ -265,6 +265,21 @@ cd biequity
 bun install
 ```
 
+### Run with Docker (web + worker)
+
+```bash
+docker compose up --build
+```
+
+Apps:
+- Web: `http://localhost:3000`
+- Worker API: `http://localhost:8787`
+
+Stop:
+```bash
+docker compose down
+```
+
 ### Run the web app
 
 ```bash
