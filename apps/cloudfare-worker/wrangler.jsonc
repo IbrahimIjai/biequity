@@ -4,6 +4,7 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2025-11-23",
 	"vars": {
+		"MOCK_MODE": "true",
 		"ALPACA_API_KEY": "",
 		"ALPACA_SECRET": "",
 		"OPERATOR_PRIVATE_KEY": "",

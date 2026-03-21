@@ -1,0 +1,28 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: apps/cloudfare-worker/Dockerfile
+    container_name: biequity-worker
+    ports:
+      - "8787:8787"
+    env_file:
+      - apps/cloudfare-worker/.env
+    environment:
+      MOCK_MODE: ${MOCK_MODE:-true}
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: biequity-web
+    depends_on:
+      - worker
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/web/.env
+    environment:
+      NEXT_PUBLIC_BIEQUITY_API_URL: ${NEXT_PUBLIC_BIEQUITY_API_URL:-http://localhost:8787}
+    restart: unless-stopped

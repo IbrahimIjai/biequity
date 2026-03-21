@@ -1,0 +1,16 @@
+.git
+.github
+.turbo
+node_modules
+**/node_modules
+**/.next
+**/.turbo
+**/.wrangler
+**/dist
+**/out
+**/build
+**/.DS_Store
+**/coverage
+contracts/cache
+contracts/out
+contracts/lib
