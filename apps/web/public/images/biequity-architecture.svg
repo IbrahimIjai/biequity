@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" viewBox="0 0 680 700" style="background:#ffffff;font-family:system-ui,sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .th { font-size:14px; font-weight:600; fill:#2d2b5e; }
+      .ts { font-size:12px; font-weight:400; fill:#534AB7; }
+
+      .layer-ui-bg   { fill:#EEEDFE; stroke:#534AB7; }
+      .layer-ct-bg   { fill:#E1F5EE; stroke:#0F6E56; }
+      .layer-ct-in   { fill:#9FE1CB; stroke:#0F6E56; }
+      .layer-ct-th   { font-size:14px; font-weight:600; fill:#085041; }
+      .layer-ct-ts   { font-size:12px; font-weight:400; fill:#0F6E56; }
+
+      .layer-wk-bg   { fill:#FAECE7; stroke:#993C1D; }
+      .layer-wk-in   { fill:#F5C4B3; stroke:#993C1D; }
+      .layer-wk-th   { font-size:14px; font-weight:600; fill:#712B13; }
+      .layer-wk-ts   { font-size:12px; font-weight:400; fill:#993C1D; }
+
+      .layer-br-bg   { fill:#E6F1FB; stroke:#185FA5; }
+      .layer-br-th   { font-size:14px; font-weight:600; fill:#0C447C; }
+      .layer-br-ts   { font-size:12px; font-weight:400; fill:#185FA5; }
+
+      .ext-pyth-bg   { fill:#FAEEDA; stroke:#854F0B; }
+      .ext-pyth-th   { font-size:14px; font-weight:600; fill:#633806; }
+      .ext-pyth-ts   { font-size:12px; font-weight:400; fill:#854F0B; }
+
+      .ext-usdc-bg   { fill:#F1EFE8; stroke:#5F5E5A; }
+      .ext-usdc-th   { font-size:14px; font-weight:600; fill:#444441; }
+      .ext-usdc-ts   { font-size:12px; font-weight:400; fill:#5F5E5A; }
+
+      .arr { stroke:#888; stroke-width:0.5; fill:none; }
+      .arr-dashed { stroke:#aaa; stroke-width:0.5; stroke-dasharray:4 3; fill:none; }
+    </style>
+  </defs>
+
+  <!-- ══ LAYER 1: UI ══ -->
+  <rect x="40" y="24" width="600" height="60" rx="12" stroke-width="0.5" class="layer-ui-bg"/>
+  <text class="th" x="340" y="51" text-anchor="middle" dominant-baseline="central">UI</text>
+  <text class="ts" x="340" y="70" text-anchor="middle" dominant-baseline="central">Next.js · wagmi · Reown · Zustand</text>
+
+  <!-- arrows UI → Contracts -->
+  <line x1="220" y1="84" x2="220" y2="134" class="arr" marker-end="url(#arrow)" stroke="#534AB7"/>
+  <text font-size="11" fill="#534AB7" x="228" y="113" dominant-baseline="central">buy() / redeem()</text>
+  <line x1="500" y1="84" x2="500" y2="134" class="arr" marker-end="url(#arrow)" stroke="#534AB7"/>
+  <text font-size="11" fill="#534AB7" x="508" y="113" dominant-baseline="central">read balances</text>
+
+  <!-- ══ LAYER 2: SMART CONTRACTS ══ -->
+  <rect x="40" y="134" width="600" height="186" rx="12" stroke-width="0.5" class="layer-ct-bg"/>
+  <text class="layer-ct-th" x="60" y="157" dominant-baseline="central">Smart contracts · Base Sepolia</text>
+
+  <!-- BiequityCore -->
+  <rect x="60" y="170" width="188" height="128" rx="8" stroke-width="0.5" class="layer-ct-in"/>
+  <text class="layer-ct-th" x="154" y="193" text-anchor="middle" dominant-baseline="central">BiequityCore</text>
+  <text class="layer-ct-ts" x="154" y="212" text-anchor="middle" dominant-baseline="central">buy() · redeem()</text>
+  <text class="layer-ct-ts" x="154" y="228" text-anchor="middle" dominant-baseline="central">settleTokens()</text>
+  <text class="layer-ct-ts" x="154" y="244" text-anchor="middle" dominant-baseline="central">registerStock()</text>
+  <text class="layer-ct-ts" x="154" y="260" text-anchor="middle" dominant-baseline="central">whitelistInvestor()</text>
+  <text class="layer-ct-ts" x="154" y="276" text-anchor="middle" dominant-baseline="central">fee 3%</text>
+
+  <!-- BiequityToken -->
+  <rect x="266" y="170" width="188" height="128" rx="8" stroke-width="0.5" class="layer-ct-in"/>
+  <text class="layer-ct-th" x="360" y="193" text-anchor="middle" dominant-baseline="central">BiequityToken</text>
+  <text class="layer-ct-ts" x="360" y="212" text-anchor="middle" dominant-baseline="central">ERC-3643 compliant</text>
+  <text class="layer-ct-ts" x="360" y="228" text-anchor="middle" dominant-baseline="central">mint() · burnFrom()</text>
+  <text class="layer-ct-ts" x="360" y="244" text-anchor="middle" dominant-baseline="central">ERC20Permit</text>
+  <text class="layer-ct-ts" x="360" y="260" text-anchor="middle" dominant-baseline="central">_update() → KYC check</text>
+
+  <!-- Identity Registry -->
+  <rect x="472" y="170" width="148" height="128" rx="8" stroke-width="0.5" class="layer-ct-in"/>
+  <text class="layer-ct-th" x="546" y="193" text-anchor="middle" dominant-baseline="central">Identity registry</text>
+  <text class="layer-ct-ts" x="546" y="212" text-anchor="middle" dominant-baseline="central">isVerified(address)</text>
+  <text class="layer-ct-ts" x="546" y="228" text-anchor="middle" dominant-baseline="central">addVerified()</text>
+  <text class="layer-ct-ts" x="546" y="244" text-anchor="middle" dominant-baseline="central">removeVerified()</text>
+  <text class="layer-ct-ts" x="546" y="260" text-anchor="middle" dominant-baseline="central">batchAdd()</text>
+
+  <!-- Core → Token, Token → Registry -->
+  <line x1="248" y1="234" x2="264" y2="234" stroke="#0F6E56" stroke-width="0.5" marker-end="url(#arrow)"/>
+  <line x1="454" y1="234" x2="470" y2="234" stroke="#0F6E56" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <!-- Pyth external -->
+  <rect x="40" y="332" width="152" height="52" rx="8" stroke-width="0.5" class="ext-pyth-bg"/>
+  <text class="ext-pyth-th" x="116" y="352" text-anchor="middle" dominant-baseline="central">Pyth Network</text>
+  <text class="ext-pyth-ts" x="116" y="370" text-anchor="middle" dominant-baseline="central">price feeds · ~400ms</text>
+  <path d="M192 358 L220 358 L220 320" fill="none" stroke="#BA7517" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <!-- USDC external -->
+  <rect x="488" y="332" width="152" height="52" rx="8" stroke-width="0.5" class="ext-usdc-bg"/>
+  <text class="ext-usdc-th" x="564" y="352" text-anchor="middle" dominant-baseline="central">USDC</text>
+  <text class="ext-usdc-ts" x="564" y="370" text-anchor="middle" dominant-baseline="central">safeTransferFrom</text>
+  <path d="M488 358 L360 358 L360 320" fill="none" stroke="#888780" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <!-- Events arrow + label -->
+  <line x1="340" y1="320" x2="340" y2="414" stroke="#0F6E56" stroke-width="0.5" marker-end="url(#arrow)"/>
+  <text font-size="11" fill="#0F6E56" x="348" y="358" dominant-baseline="central">TokensMinted</text>
+  <text font-size="11" fill="#0F6E56" x="348" y="374" dominant-baseline="central">TokensRedeemed</text>
+
+  <!-- settleTokens feedback loop -->
+  <path d="M60 488 L28 488 L28 234 L58 234" fill="none" stroke="#aaa" stroke-width="0.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <text font-size="10" fill="#888" x="6" y="440" text-anchor="middle" transform="rotate(-90,6,440)">settleTokens()</text>
+
+  <!-- ══ LAYER 3: WORKER ══ -->
+  <rect x="40" y="414" width="600" height="162" rx="12" stroke-width="0.5" class="layer-wk-bg"/>
+  <text class="layer-wk-th" x="60" y="437" dominant-baseline="central">Settlement worker · Cloudflare</text>
+
+  <!-- Web3Service -->
+  <rect x="60" y="450" width="172" height="108" rx="8" stroke-width="0.5" class="layer-wk-in"/>
+  <text class="layer-wk-th" x="146" y="472" text-anchor="middle" dominant-baseline="central">Web3Service</text>
+  <text class="layer-wk-ts" x="146" y="491" text-anchor="middle" dominant-baseline="central">processBuyQueue()</text>
+  <text class="layer-wk-ts" x="146" y="507" text-anchor="middle" dominant-baseline="central">processSellQueue()</text>
+  <text class="layer-wk-ts" x="146" y="523" text-anchor="middle" dominant-baseline="central">getEvents()</text>
+  <text class="layer-wk-ts" x="146" y="539" text-anchor="middle" dominant-baseline="central">cron trigger</text>
+
+  <!-- AlpacaService -->
+  <rect x="250" y="450" width="172" height="108" rx="8" stroke-width="0.5" class="layer-wk-in"/>
+  <text class="layer-wk-th" x="336" y="472" text-anchor="middle" dominant-baseline="central">AlpacaService</text>
+  <text class="layer-wk-ts" x="336" y="491" text-anchor="middle" dominant-baseline="central">placeMarketOrder()</text>
+  <text class="layer-wk-ts" x="336" y="507" text-anchor="middle" dominant-baseline="central">getPosition()</text>
+  <text class="layer-wk-ts" x="336" y="523" text-anchor="middle" dominant-baseline="central">MOCK_MODE flag</text>
+
+  <!-- REST API -->
+  <rect x="440" y="450" width="180" height="108" rx="8" stroke-width="0.5" class="layer-wk-in"/>
+  <text class="layer-wk-th" x="530" y="472" text-anchor="middle" dominant-baseline="central">REST API</text>
+  <text class="layer-wk-ts" x="530" y="491" text-anchor="middle" dominant-baseline="central">POST /mint</text>
+  <text class="layer-wk-ts" x="530" y="507" text-anchor="middle" dominant-baseline="central">POST /redeem</text>
+  <text class="layer-wk-ts" x="530" y="523" text-anchor="middle" dominant-baseline="central">GET  /requests</text>
+  <text class="layer-wk-ts" x="530" y="539" text-anchor="middle" dominant-baseline="central">GET  /prices</text>
+
+  <!-- Web3 → Alpaca, Alpaca → REST -->
+  <line x1="232" y1="504" x2="248" y2="504" stroke="#993C1D" stroke-width="0.5" marker-end="url(#arrow)"/>
+  <line x1="422" y1="504" x2="438" y2="504" stroke="#993C1D" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <!-- Worker → Brokerage -->
+  <line x1="340" y1="576" x2="340" y2="622" stroke="#185FA5" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <!-- ══ LAYER 4: BROKERAGE ══ -->
+  <rect x="40" y="622" width="600" height="58" rx="12" stroke-width="0.5" class="layer-br-bg"/>
+  <text class="layer-br-th" x="340" y="645" text-anchor="middle" dominant-baseline="central">Simulated brokerage API</text>
+  <text class="layer-br-ts" x="340" y="664" text-anchor="middle" dominant-baseline="central">e.g. Alpaca, Trove — market orders · position tracking · tokenization network</text>
+</svg>

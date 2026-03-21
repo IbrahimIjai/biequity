@@ -1,369 +1,315 @@
-# Biequity
+<div align="center">
+  <img src="apps/web/public/logo.png" alt="Biequity Logo" width="64" />
 
-**Tokenized real-world equity on Base.** Deposit USDC, receive on-chain stock tokens backed 1:1 by real shares — transferable, composable in DeFi, ERC-3643 compliant.
+  <h1>BIEQUITY</h1>
 
-> ⚠️ This is a portfolio/research project. Provider integrations run in simulated mode. Not production-ready or financial advice.
+  <p><strong>Permissionless tokenized stock issuance on Base.</strong><br/>
+  Deposit USDC. Receive on-chain stock tokens backed 1:1 by real shares held in custody.</p>
+
+  <p>
+    <a href="https://www.biequity.xyz"><strong>🌐 Live App</strong></a> &nbsp;·&nbsp;
+    <a href="#-quick-start">🚀 Run Locally</a> &nbsp;·&nbsp;
+    <a href="#-architecture">🏗 Architecture</a> &nbsp;·&nbsp;
+    <a href="#-design-decisions">🧠 Design Decisions</a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/network-Base%20Sepolia-0052FF?style=flat-square" alt="Base Sepolia" />
+    <img src="https://img.shields.io/badge/token%20standard-ERC--3643-8B5CF6?style=flat-square" alt="ERC-3643" />
+    <img src="https://img.shields.io/badge/oracle-Pyth%20Network-E6CC19?style=flat-square" alt="Pyth" />
+    <img src="https://img.shields.io/badge/edge%20runtime-Cloudflare%20Workers-F38020?style=flat-square" alt="Cloudflare Workers" />
+    <img src="https://img.shields.io/badge/status-experimental-orange?style=flat-square" alt="Experimental" />
+  </p>
+</div>
 
 ---
 
-## What It Does
+Biequity lets anyone swap USDC for tokenized US equities — `bieAAPL`, `bieTSLA`, `bieMSFT` — directly from a wallet, no broker account required. Each token is minted on-chain and backed 1:1 by a real share purchased and held by a brokerage partner. Tokens are ERC-3643 compliant, meaning transfers are gated by an on-chain identity registry — only KYC-verified addresses can hold or move them.
 
-Biequity bridges traditional equities and on-chain DeFi. A user deposits USDC and receives tokenized stock (e.g. `bieAAPL`) representing a fractional share of the underlying security. Under the hood, a Cloudflare Worker listens for on-chain mint events, purchases the real shares via Alpaca's brokerage API, and calls `settleTokens()` on the contract once the position is confirmed.
+---
+
+## 📹 Demo
+
+> Watch the full walkthrough — deposit USDC, select a stock, approve, mint, and see the token land in your wallet.
+
+<video src="apps/web/public/images/biequity-demo.mov" controls="controls" width="100%"></video>
+
+---
+
+## 🏗 Architecture
+
+The system is a Turborepo monorepo with three primary layers: smart contracts on Base Sepolia, a Next.js 14 frontend, and a Cloudflare Worker that bridges on-chain events to a traditional brokerage API.
+
+![Biequity Architecture](apps/web/public/images/biequity-architecture.svg)
+
+### How the full flow works
 
 ```
 User deposits USDC
         │
         ▼
 BiequityCore.buy("AAPL", amount)
-  ├─ Fees to treasury (3%)
-  ├─ Mints bieAAPL tokens to user
-  └─ Emits TokensMinted event
+  ├── Pyth oracle → get current AAPL/USD price
+  ├── Calculate token qty (netUSDC / price)
+  ├── Collect 3% fee → treasury
+  ├── BiequityTokenFactory.deployedTokens["AAPL"] → mint bieAAPL to user
+  └── Emit TokensMinted(symbol, amount, netUsdc)
+        │
+        ▼ (async — Cloudflare Worker cron)
+Web3Service.processBuyQueue()
+  ├── Read TokensMinted events (last 100 blocks)
+  ├── AlpacaService.placeMarketOrder("AAPL", qty, "buy")
+  └── BiequityCore.settleTokens("AAPL", amount)  ← confirms 1:1 backing
         │
         ▼
-Cloudflare Worker (cron / webhook)
-  ├─ Reads TokensMinted events
-  ├─ Places market buy on Alpaca
-  └─ Calls settleTokens() on-chain
-        │
-        ▼
-bieAAPL tokens are now fully backed
-(ERC-3643 compliant, transferable between KYC-verified addresses)
+bieAAPL tokens are now fully backed and redeemable
 ```
 
----
+### Contract map
 
-## Architecture
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                        apps/web                          │
-│   Next.js 14 · wagmi · Reown · Zustand · shadcn/ui       │
-│   Neobrutalist design · Dark mode · PWA manifest         │
-└──────────────────────┬───────────────────────────────────┘
-                       │  contract calls (viem)
-┌──────────────────────▼───────────────────────────────────┐
-│              contracts/ (Foundry · Base Sepolia)         │
-│                                                          │
-│  BiequityCore          — buy / redeem / settle           │
-│  BiequityToken         — ERC-3643 compliant ERC-20       │
-│  IdentityRegistry      — on-chain KYC whitelist          │
-│  BiequityTokenFactory  — deploys one token per stock     │
-│  Pyth oracle           — real-time price feeds           │
-└──────────────────────┬───────────────────────────────────┘
-                       │  reads events / calls settleTokens
-┌──────────────────────▼───────────────────────────────────┐
-│          apps/cloudfare-worker (Hono · Cloudflare)       │
-│                                                          │
-│  AlpacaService         — brokerage API (buy/sell)        │
-│  MockProviderService   — simulated provider (dev mode)   │
-│  TokenizationController — REST API for mint/redeem       │
-│  Web3Service           — reads on-chain events           │
-│  Cron trigger          — processes buy/sell queues       │
-└──────────────────────────────────────────────────────────┘
-```
-
----
-
-## Token Standard: ERC-3643 (T-REX)
-
-`BiequityToken` implements a simplified ERC-3643 compliance layer. Every transfer is validated against an on-chain `IdentityRegistry` — only KYC-verified addresses can hold or transfer tokens.
-
-```solidity
-function _update(address from, address to, uint256 value) internal override {
-    bool isMint = from == address(0);
-    bool isBurn = to == address(0);
-
-    if (!isMint && !isBurn) {
-        if (!identityRegistry.isVerified(from)) revert TransferNotCompliant(from, to);
-        if (!identityRegistry.isVerified(to))   revert TransferNotCompliant(from, to);
-    }
-
-    super._update(from, to, value);
-}
-```
-
-This means `bieAAPL` tokens are **not** freely tradeable on Uniswap — transfers only succeed between whitelisted addresses. In a production system, the registry would be backed by an on-chain KYC oracle (Fractal, Quadrata, etc.).
-
-**ERC-3643 components implemented:**
-- `IIdentityRegistry` — interface
-- `IdentityRegistry` — ownable whitelist with batch operations
-- Transfer hook in `BiequityToken._update`
-- `setIdentityRegistry()` — allows rotating the registry without redeploying tokens
-
-**Not implemented (out of scope for portfolio):**
-- `ClaimTopicsRegistry`
-- `TrustedIssuersRegistry`
-- Full ONCHAINID identity model
-
----
-
-## Contracts
-
-Deployed on **Base Sepolia** testnet.
-
-| Contract | Description |
+| Contract | Role |
 |---|---|
-| `BiequityCore` | Protocol entry point. Handles buy, redeem, settle, fee collection. |
-| `BiequityToken` | Per-stock ERC-20 token with ERC-3643 transfer compliance. |
-| `BiequityTokenFactory` | Deploys one `BiequityToken` per registered stock. |
-| `IdentityRegistry` | On-chain KYC whitelist. Owner can add/remove investors. |
+| `BiequityCore` | Protocol entry point — `buy()`, `redeem()`, `settleTokens()`, fee collection, treasury |
+| `BiequityTokenFactory` | Deploys one `BiequityToken` per registered stock symbol |
+| `BiequityToken` | ERC-3643 compliant ERC-20 — transfer gating, `ERC20Permit`, `ERC20Pausable` |
+| `IdentityRegistry` | On-chain KYC whitelist — `isVerified(address)` called on every transfer |
 
-### Key Functions
+**Deployed on Base Sepolia:** `BiequityCore` at `0x8B0EF8eD5D6F3ceF0803c26Ea7471ba83CB6cB80`
 
-```solidity
-// Register a new stock (owner only)
-registerStock(string symbol, string name, bytes32 pythFeedId, uint256 minBackedRatio)
+**Pyth price feeds used:**
 
-// User buys stock tokens with USDC
-buy(string symbol, uint256 usdcAmount)
+| Stock | Feed ID |
+|---|---|
+| AAPL | `0x49f6b65cb1de6b10eaf75e7c03ca029c306d0357e91b5311b175084a5ad55688` |
+| TSLA | `0x16dad506d7db8da01c87581c87ca897a012a153557d4d578c3b9c9e1bc0632f1` |
+| MSFT | `0xd0ca23c1cc005e004ccf1db5bf76aeb6a49218f43dac3d4b275e92de12ded4d1` |
 
-// User redeems tokens for USDC
-redeem(string symbol, uint256 tokenAmount)
+---
 
-// Worker calls this after purchasing real shares
-settleTokens(string symbol, uint256 amount)
+## 📸 Screenshots
 
-// Whitelist a user for KYC (proxies to IdentityRegistry)
-whitelistInvestor(address investor)
+<table>
+  <tr>
+    <td><img src="apps/web/public/images/heros-screenshot-desktop.png" alt="Landing page desktop" /></td>
+    <td><img src="apps/web/public/images/heros-screenshot-mobile.png" alt="Landing page mobile" width="260" /></td>
+  </tr>
+  <tr>
+    <td colspan="2"><em>Landing page — neobrutalist design with animated minting engine</em></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="apps/web/public/images/trades-page-desktop.png" alt="Swap interface desktop" /></td>
+    <td><img src="apps/web/public/images/trades-page-desktop-2.png" alt="Token selector desktop" /></td>
+  </tr>
+  <tr>
+    <td><em>Swap interface — USDC in, stock token out. Connected wallet shows live balances.</em></td>
+    <td><em>Token selector — shows AAPL, TSLA, MSFT with real on-chain balances pulled from the contract.</em></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="apps/web/public/images/trades-page-mobile.png" alt="Swap mobile" width="280" /></td>
+    <td><img src="apps/web/public/images/trades-page-mobile-2.png" alt="Token selector mobile" width="280" /></td>
+  </tr>
+  <tr>
+    <td colspan="2"><em>Fully responsive — same swap experience on mobile with touch-optimised token selector.</em></td>
+  </tr>
+</table>
+
+---
+
+## 📁 Folder Structure
+
 ```
-
-### Price Oracle
-
-Uses [Pyth Network](https://pyth.network/) price feeds. Prices are fetched via `getPriceUnsafe()` — in production you'd want `getPrice()` with a max staleness check.
-
----
-
-## Worker API
-
-The Cloudflare Worker exposes a REST API and runs a cron job to process settlement.
-
-Base URL: `https://your-worker.workers.dev`
-
-### Endpoints
-
-#### `GET /`
-Health check. Returns `200 OK`.
-
----
-
-#### `GET /api/stocks/prices`
-Returns current prices for supported stocks.
-
-**Response:**
-```json
-{
-  "prices": [
-    { "symbol": "AAPL", "price": 214.29, "currency": "USD" },
-    { "symbol": "TSLA", "price": 247.15, "currency": "USD" },
-    { "symbol": "MSFT", "price": 415.82, "currency": "USD" }
-  ],
-  "timestamp": "2026-03-20T12:00:00.000Z"
-}
-```
-
----
-
-#### `GET /api/assets/supported`
-Returns the list of stocks supported by the protocol.
-
----
-
-#### `POST /api/tokenization/mint`
-Initiates a mint (buy underlying shares + request token issuance).
-
-**Request body:**
-```json
-{
-  "symbol": "AAPL",
-  "qty": "0.5",
-  "wallet_address": "0xYourWalletAddress"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "mode": "simulated",
-  "alpaca_order": {
-    "id": "14d484e3-...",
-    "symbol": "AAPL",
-    "qty": "0.5",
-    "filled_avg_price": "214.29",
-    "side": "buy",
-    "status": "filled"
-  },
-  "tokenization_request": {
-    "tokenization_request_id": "abc123...",
-    "status": "pending",
-    "underlying_symbol": "AAPL",
-    "token_symbol": "AAPLx",
-    "qty": "0.5",
-    "issuer": "xstocks",
-    "network": "base-sepolia",
-    "fees": "0.000500"
-  }
-}
+biequity/
+├── apps/
+│   ├── web/                          # Next.js 14 frontend (PWA, dark mode)
+│   │   ├── app/
+│   │   │   ├── (marketing)/          # Landing page + protocol explainer
+│   │   │   └── (apps)/trade/         # Swap UI
+│   │   ├── components/
+│   │   │   ├── trade/                # trade-ui · trade-transaction-dialog
+│   │   │   │                         # token-selector-dialog · numerical-input
+│   │   │   └── protocol/             # Protocol info + compliance explainer
+│   │   ├── hooks/                    # useTradeContract · useStockPrices
+│   │   │                             # useUSDCApproval · useBalances
+│   │   ├── store/                    # Zustand — trade · prices · balances
+│   │   ├── config/                   # Contract ABIs · wagmi config · web3 setup
+│   │   └── providers/                # Reown/wagmi · theme · data providers
+│   │
+│   └── cloudfare-worker/             # Cloudflare Worker (Hono framework)
+│       ├── src/
+│       │   ├── controllers/          # assets.controller · webhook.controller
+│       │   ├── services/             # alpaca.service · web3.service
+│       │   ├── web3/                 # viem client · contract helpers · ABI
+│       │   └── routes/               # Hono route definitions
+│       └── wrangler.jsonc
+│
+├── contracts/                        # Foundry project
+│   ├── src/
+│   │   ├── BiequityCore.sol          # Protocol core (buy · redeem · settle)
+│   │   ├── BiequityToken.sol         # ERC-3643 stock token
+│   │   ├── BiequityTokenFactory.sol  # Token deployer (one per stock)
+│   │   ├── IdentityRegistry.sol      # KYC whitelist
+│   │   └── interfaces/
+│   │       └── IIdentityRegistry.sol
+│   ├── script/
+│   │   ├── Deploy.s.sol              # Deploy BiequityCore
+│   │   └── SetupStocks.s.sol         # Register AAPL/TSLA/MSFT
+│   └── test/
+│
+└── packages/
+    ├── assets/                       # Shared token defs + Pyth feed IDs
+    ├── ui/                           # Shared shadcn/ui components
+    ├── eslint-config/
+    └── typescript-config/
 ```
 
 ---
 
-#### `POST /api/tokenization/redeem`
-Initiates a redemption (burn tokens + sell underlying shares).
+## 🚀 Quick Start
 
-**Request body:**
-```json
-{
-  "symbol": "AAPL",
-  "qty": "0.5",
-  "wallet_address": "0xYourWalletAddress"
-}
-```
-
----
-
-#### `GET /api/tokenization/requests`
-Lists all tokenization requests.
-
----
-
-#### `GET /api/tokenization/requests/:id`
-Gets a single request by ID.
-
----
-
-#### `POST /process-events`
-Manually triggers the settlement queue. Normally called by Cloudflare Cron.
-
----
-
-### Cron Schedule
-
-The worker runs on a schedule (configurable in `wrangler.jsonc`) to process pending settlement events:
-
-```
-processBuyQueue()  — reads TokensMinted events, buys shares on Alpaca, calls settleTokens()
-processSellQueue() — reads TokensRedeemed events, sells shares on Alpaca
-```
-
----
-
-## Setup & Development
-
-### Prerequisites
-
-- Node.js 18+
-- [Bun](https://bun.sh/) (used as package manager)
-- [Foundry](https://getfoundry.sh/) (for contracts)
-- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (for the worker)
-
-### Install
+### With Docker (easiest)
 
 ```bash
 git clone https://github.com/IbrahimIjai/biequity
 cd biequity
+cp .env.example .env.local   # fill in NEXT_PUBLIC_PROJECT_ID
+docker compose up
+```
+
+- Web app: [http://localhost:3000](http://localhost:3000)
+- Worker API: [http://localhost:8787](http://localhost:8787)
+
+The worker runs in `MOCK_MODE=true` by default — no real brokerage credentials needed. Everything simulates successfully.
+
+### Manual setup
+
+```bash
+# Install (uses Bun workspaces)
 bun install
-```
 
-### Run with Docker (web + worker)
-
-```bash
-docker compose up --build
-```
-
-Apps:
-- Web: `http://localhost:3000`
-- Worker API: `http://localhost:8787`
-
-Stop:
-```bash
-docker compose down
-```
-
-### Run the web app
-
-```bash
+# Terminal 1 — web app
 cd apps/web
 bun dev
-```
 
-### Run the worker locally
-
-```bash
+# Terminal 2 — cloudflare worker
 cd apps/cloudfare-worker
 wrangler dev
-```
 
-The worker runs in `MOCK_MODE=true` by default — no real API keys needed.
-
-### Run contract tests
-
-```bash
+# Terminal 3 — contract tests
 cd contracts
 forge test -vv
+```
+
+### Environment variables
+
+**`apps/web/.env.local`**
+```bash
+NEXT_PUBLIC_PROJECT_ID=    # Reown project ID — get from cloud.reown.com
+NEXT_PUBLIC_WORKER_URL=http://localhost:8787
+```
+
+**`apps/cloudfare-worker/wrangler.jsonc`** (or Cloudflare secrets for prod)
+```jsonc
+{
+  "vars": {
+    "MOCK_MODE": "true",               // set "false" for live Alpaca
+    "ALPACA_API_KEY": "",              // production only
+    "ALPACA_SECRET_KEY": "",           // production only
+    "OPERATOR_PRIVATE_KEY": "",        // wallet that calls settleTokens()
+    "RPC_URL": "",                     // Base Sepolia RPC URL
+    "BIEQUITY_CORE_ADDRESS": "0x8B0EF8eD5D6F3ceF0803c26Ea7471ba83CB6cB80"
+  }
+}
 ```
 
 ### Deploy contracts
 
 ```bash
 cd contracts
-forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast
+
+# Deploy core
+forge script script/Deploy.s.sol \
+  --rpc-url base-sepolia \
+  --broadcast \
+  --verify
+
+# Register stocks
+forge script script/SetupStocks.s.sol \
+  --rpc-url base-sepolia \
+  --broadcast
 ```
 
 ---
 
-## Environment Variables
+## 🧠 Design Decisions
 
-### Cloudflare Worker (`wrangler.jsonc` vars or Cloudflare secrets)
+### Why ERC-3643 instead of a plain ERC-20?
 
-| Variable | Required | Description |
-|---|---|---|
-| `MOCK_MODE` | No (defaults `true`) | Set to `"false"` for live Alpaca integration |
-| `ALPACA_API_KEY` | Production only | Alpaca brokerage API key |
-| `ALPACA_SECRET_KEY` | Production only | Alpaca brokerage secret |
-| `OPERATOR_PRIVATE_KEY` | Production only | Private key of the operator wallet (calls `settleTokens`) |
-| `RPC_URL` | Production only | Base Sepolia RPC URL |
-| `BIEQUITY_CORE_ADDRESS` | Production only | Deployed `BiequityCore` contract address |
+Tokenized equities are regulated instruments, not commodities. A vanilla ERC-20 allows any address to receive or move the token — which conflicts with securities regulations in essentially every jurisdiction that has addressed the question.
 
-### Web App (`.env.local`)
+ERC-3643 (the T-REX standard, used by Backed/xStocks and Ondo in production) embeds the compliance check inside the token's own transfer function. The `_update()` override queries an `IdentityRegistry` before every peer-to-peer transfer and reverts with a typed error if either party isn't verified. This makes compliance protocol-level rather than app-level — you can't route around it through a different UI.
 
-```bash
-NEXT_PUBLIC_REOWN_PROJECT_ID=your_reown_project_id
-NEXT_PUBLIC_WORKER_URL=http://localhost:8787
+```solidity
+// BiequityToken._update() — called on every transfer
+if (!isMint && !isBurn) {
+    if (!identityRegistry.isVerified(from)) revert TransferNotCompliant(from, to);
+    if (!identityRegistry.isVerified(to))   revert TransferNotCompliant(from, to);
+}
 ```
 
----
+The trade-off is DeFi composability: compliant tokens don't drop into Uniswap or Aave. The production approach for that is a whitelisted ERC-20 wrapper — the underlying position stays compliant, a separate wrapper is whitelisted for specific DeFi pools. That's out of scope here but a clear next step.
 
-## Design Decisions & Trade-offs
+### Why Cloudflare Workers instead of a traditional backend?
 
-**Why ERC-3643 instead of plain ERC-20?**
-Tokenized securities require compliance-aware transfers. ERC-3643 bakes the identity check into the token itself — there's no separate compliance contract to opt into. This is how Backed (xStocks) and Ondo structure their tokens.
+The settlement layer needs to do exactly one thing reliably: wake up periodically, read recent on-chain events, place a brokerage order, and write back to the chain. That's a stateless, I/O-bound workload that runs for a few hundred milliseconds at most.
 
-**Why Cloudflare Worker instead of a traditional backend?**
-Workers are stateless, globally distributed, and free to run on a cron — perfect for an event listener that needs to be always-on without infrastructure overhead.
+A traditional Node server would require provisioning, a process manager, uptime monitoring, and scaling logic — all overhead for something a Cloudflare Worker handles natively with a built-in cron trigger and zero infrastructure. At scale, you'd want more durable execution guarantees (Cloudflare Durable Objects, or a proper queue-backed worker), but for a protocol at this stage Workers are the right abstraction.
 
-**Why Pyth instead of Chainlink?**
-Pyth has tighter update frequency (~400ms) and supports a larger set of equities. For tokenized stocks where price accuracy matters, this is the right call.
+### Why Pyth Network over Chainlink?
 
-**Why simulated providers instead of real ones?**
-Alpaca ITN requires a business relationship and is not open to individual developers. The mock layer lets the project run end-to-end in a portfolio context without real credentials, while being architecturally identical to the production path.
+Two concrete reasons: update latency and equity coverage.
 
-**Why Base (not Ethereum mainnet)?**
-Lower gas costs and faster finality make fractional equity trades economically viable. Base is where the existing RWA ecosystem (Coinbase, xStocks) is already building.
+Pyth uses a pull-based oracle model — publishers push prices to Pyth's off-chain network continuously (~400ms cadence), and contracts pull the latest price in at the moment they need it. Chainlink's push-based model updates on a deviation threshold or heartbeat, often 1–3 minutes for equity feeds. For a protocol where the price directly determines how many tokens a user receives per dollar of USDC, a 2-minute stale price during a volatile period is meaningful slippage.
+
+Pyth also has broader US equity feed coverage in its current catalogue. The `getPriceUnsafe()` call used here doesn't revert on stale data — in production you'd use `getPrice(feedId, maxAge)` to enforce a freshness bound.
 
 ---
 
-## Roadmap (If This Were Production)
+## 🔌 Simulated Providers
 
-- [ ] Replace `IdentityRegistry` with Fractal/Quadrata oracle integration
-- [ ] Multi-issuer support (Ondo, Dinari alongside xStocks)
-- [ ] ERC-20 wrapper for DeFi composability (compliant holding → permissionless wrapped token)
-- [ ] Dividend distribution to token holders
-- [ ] Corporate action handling (splits, mergers)
-- [ ] Nigeria/Africa go-to-market with NGN/USDC on-ramp
+In production, the settlement layer would integrate with [**Alpaca's Instant Tokenization Network (ITN)**](https://alpaca.markets/tokenization) — a real infrastructure layer for minting and redeeming tokenized securities.
+
+The ITN works as follows: an authorized participant (AP) calls `POST /v2/tokenization/mint` with a stock symbol, quantity, and destination wallet. Alpaca journals the underlying shares from the AP's brokerage account to the issuer's account (currently xStocks, recently acquired by Kraken). The issuer deposits the tokenized asset to the AP's wallet. Redemption is the reverse. Alpaca currently commands an estimated 94% global market share in tokenized US equities infrastructure.
+
+Becoming an authorized participant requires a formal onboarding relationship with Alpaca — it's not available to individual developers, and Alpaca's ITN currently only supports Solana as its settlement chain.
+
+For these reasons, the worker runs in `MOCK_MODE=true` by default. `MockProviderService` intercepts all brokerage and tokenization calls and returns realistic responses with simulated latency, auto-settling requests after 2 seconds. The code path is architecturally identical to the production path — switching to live mode is a configuration change (`MOCK_MODE=false` + real Alpaca credentials), not a code change.
+
+---
+
+## ⚠️ Status
+
+Biequity is an **experimental research project** deployed on Base Sepolia testnet. It does not handle real money and is not production-ready.
+
+There's a plausible path to mainnet, pending a few open questions:
+
+- **Regulatory clarity** — operating a tokenized securities platform typically requires a broker-dealer license or a formal partnership with one. Alpaca provides the brokerage infrastructure; what's needed is clarity on jurisdiction, issuer relationship, and what "authorized participant" status requires in practice.
+- **EVM support on Alpaca ITN** — the ITN currently only settles on Solana. Base (EVM) support is on their roadmap.
+- **DeFi wrapper** — the ERC-3643 compliance layer blocks standard DeFi integrations. A whitelisted ERC-20 wrapper would unlock lending and yield strategies on top of the positions.
+
+If this is in the direction you're building — tokenized RWA infrastructure, Africa-focused DeFi access to US markets, or something adjacent — open an issue or reach out.
 
 ---
 
 ## License
 
 MIT
+
+<div align="center">
+  <sub>Built with Foundry · Next.js 14 · Cloudflare Workers · Pyth Network · wagmi · Base</sub>
+</div>
